@@ -1,3 +1,5 @@
+// analise lexica e sintatica sem o uso do flex.
+
 %{
 #include "globals.h"
 #include <stdio.h>
