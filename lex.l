@@ -6,7 +6,7 @@
     int lineno = 0;
     char tokenString[MAXTOKENLEN+1];
 
-    FILE * source;
+    FILE * source_file;
 %}
 
 DIGITO [0-9]

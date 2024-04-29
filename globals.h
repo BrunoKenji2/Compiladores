@@ -22,7 +22,7 @@ extern int lineno;  // contador linhas
 
 typedef enum {StmtK, ExpK} NodeKind;    // no tem 2 tipos
 typedef enum {IfK,WhileK,AssignK,ReturnK,CallK,VarK,VetK,FuncaoK} StmtKind; //tipos de declaração
-typedef enum {OpK,ConstK,IdK,TypeK,VarIdK,VetIdK} ExpKind; //tipos de expressão
+typedef enum {OpK,ConstK,IdK,TypeK,VarIdK,VetIdK} ExpKind; //tipos de operação
 typedef enum {Void, Integer,Bool}ExpType; // tipos de dados da expressão 
 
 typedef struct treeNode{

@@ -489,7 +489,7 @@ char *yytext;
     int lineno = 0;
     char tokenString[MAXTOKENLEN+1];
 
-    FILE * source;
+    FILE * source_file;
 #line 494 "lex.yy.c"
 #line 495 "lex.yy.c"
 

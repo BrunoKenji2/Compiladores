@@ -5,8 +5,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <strings.h>
+#include "symtab.h"
+#include "semantic.h"
 
-FILE * source_file;
+//FILE * source_file;
 
 unsigned char error = 0;
 //TokenType tok;
@@ -48,6 +50,7 @@ int main(int argc, char *argv[])
   raiz = parse();
   if(raiz != NULL){
     printTreeR(raiz);
+    buildSymtab(raiz);
   }else{
     printf("Erro de sintaxe\n");
   
