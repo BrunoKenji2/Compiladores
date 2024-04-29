@@ -4,7 +4,7 @@
     #include "scan.h"
 
     int lineno = 0;
-    char tokenstring[MAXTOKENLEN+1];
+    char tokenString[MAXTOKENLEN+1];
 
     FILE * source;
 %}
@@ -73,7 +73,7 @@ TokenType getToken(void)
 	{
 		primeiraExecucao = 0;
     lineno++;
-		yyin = source;
+		yyin = source_file;
 	}
 	tokenAtual = yylex();
 	strncpy(tokenString, yytext, MAXTOKENLEN);

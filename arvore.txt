@@ -1,0 +1,139 @@
+  Tipo: int
+    Vetor vet Linha: 1 Escopo: global
+      Const: 10
+  Tipo: int
+    Funcão - int - minloc - Linha: 3 Escopo: global
+      Tipo: int
+        Vetor a Linha: 3 Escopo: minloc
+      Tipo: int
+        Var low Linha: 3 Escopo: minloc
+      Tipo: int
+        Var high Linha: 3 Escopo: minloc
+      Tipo: int
+        Var i Linha: 4 Escopo: minloc
+      Tipo: int
+        Var x Linha: 4 Escopo: minloc
+      Tipo: int
+        Var k Linha: 4 Escopo: minloc
+      Assign
+        VarID: k Line: 5 Escopo: minloc
+        VarID: low Line: 5 Escopo: minloc
+      Assign
+        VarID: x Line: 6 Escopo: minloc
+        VetID: a Line: 6 Escopo: minloc
+          VarID: low Line: 6 Escopo: minloc
+      Assign
+        VarID: i Line: 7 Escopo: minloc
+        Op: +
+          VarID: low Line: 7 Escopo: minloc
+          Const: 1
+      while
+        Op: <
+          VarID: i Line: 8 Escopo: minloc
+          VarID: high Line: 8 Escopo: minloc
+        If
+          Op: <
+            VetID: a Line: 9 Escopo: minloc
+              VarID: i Line: 9 Escopo: minloc
+            VarID: x Line: 9 Escopo: minloc
+          Assign
+            VarID: x Line: 10 Escopo: minloc
+            VetID: a Line: 10 Escopo: minloc
+              VarID: i Line: 10 Escopo: minloc
+          Assign
+            VarID: k Line: 11 Escopo: minloc
+            VarID: i Line: 11 Escopo: minloc
+        Assign
+          VarID: i Line: 13 Escopo: minloc
+          Op: +
+            VarID: i Line: 13 Escopo: minloc
+            Const: 1
+      Return
+        VarID: k Line: 15 Escopo: minloc
+  Tipo: void
+    Funcão - void - sort - Linha: 18 Escopo: global
+      Tipo: int
+        Vetor a Linha: 18 Escopo: sort
+      Tipo: int
+        Var low Linha: 18 Escopo: sort
+      Tipo: int
+        Var high Linha: 18 Escopo: sort
+      Tipo: int
+        Var i Linha: 19 Escopo: sort
+      Tipo: int
+        Var k Linha: 19 Escopo: sort
+      Assign
+        VarID: i Line: 20 Escopo: sort
+        VarID: low Line: 20 Escopo: sort
+      while
+        Op: <
+          VarID: i Line: 21 Escopo: sort
+          Op: -
+            VarID: high Line: 21 Escopo: sort
+            Const: 1
+        Tipo: int
+          Var t Linha: 22 Escopo: sort
+        Assign
+          VarID: k Line: 23 Escopo: sort
+          Call: minloc Linha: 23
+            VarID: a Line: 23 Escopo: sort
+            VarID: i Line: 23 Escopo: sort
+            VarID: high Line: 23 Escopo: sort
+        Assign
+          VarID: t Line: 24 Escopo: sort
+          VetID: a Line: 24 Escopo: sort
+            VarID: k Line: 24 Escopo: sort
+        Assign
+          VetID: a Line: 25 Escopo: sort
+            VarID: k Line: 25 Escopo: sort
+          VetID: a Line: 25 Escopo: sort
+            VarID: i Line: 25 Escopo: sort
+        Assign
+          VetID: a Line: 26 Escopo: sort
+            VarID: i Line: 26 Escopo: sort
+          VarID: t Line: 26 Escopo: sort
+        Assign
+          VarID: i Line: 27 Escopo: sort
+          Op: +
+            VarID: i Line: 27 Escopo: sort
+            Const: 1
+  Tipo: void
+    Funcão - void - main - Linha: 31 Escopo: global
+      Const: 0
+      Tipo: int
+        Var i Linha: 33 Escopo: main
+      Assign
+        VarID: i Line: 34 Escopo: main
+        Const: 0
+      while
+        Op: <
+          VarID: i Line: 35 Escopo: main
+          Const: 10
+        Assign
+          VetID: vet Line: 36 Escopo: main
+            VarID: i Line: 36 Escopo: main
+          Call: input Linha: 36
+        Assign
+          VarID: i Line: 37 Escopo: main
+          Op: +
+            VarID: i Line: 37 Escopo: main
+            Const: 1
+      Call: sort Linha: 39
+        VarID: vet Line: 39 Escopo: main
+        Const: 0
+        Const: 10
+      Assign
+        VarID: i Line: 40 Escopo: main
+        Const: 0
+      while
+        Op: <
+          VarID: i Line: 41 Escopo: main
+          Const: 10
+        Call: output Linha: 42
+          VetID: vet Line: 42 Escopo: main
+            VarID: i Line: 42 Escopo: main
+        Assign
+          VarID: i Line: 43 Escopo: main
+          Op: +
+            VarID: i Line: 43 Escopo: main
+            Const: 1

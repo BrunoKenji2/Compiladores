@@ -12,7 +12,7 @@
 
 typedef int TokenType;  // tokens
 
-extern FILE *source_file;   // arquivo de entrada
+extern FILE* source_file;   // arquivo de entrada
 extern int lineno;  // contador linhas
 
 #define MAXCHILDREN 3
@@ -21,8 +21,8 @@ extern int lineno;  // contador linhas
 
 
 typedef enum {StmtK, ExpK} NodeKind;    // no tem 2 tipos
-typedef enum {IfK,WhileK,AssignK,ReturnK,CallK,Vark,VetK,FuncaoK} StmtKind; //tipos de declaração
-typedef enum {OpK,ConstK,Idk,TypeK,VarIdK,VetIdK} ExpKind; //tipos de expressão
+typedef enum {IfK,WhileK,AssignK,ReturnK,CallK,VarK,VetK,FuncaoK} StmtKind; //tipos de declaração
+typedef enum {OpK,ConstK,IdK,TypeK,VarIdK,VetIdK} ExpKind; //tipos de expressão
 typedef enum {Void, Integer,Bool}ExpType; // tipos de dados da expressão 
 
 typedef struct treeNode{
@@ -31,8 +31,8 @@ typedef struct treeNode{
     int lineno;
     char* escopo;
     NodeKind nodeKind;
-    union{StmtKind stmt; ExpKind exp} kind;
-    union{TokenType op; int val; char* nome} attr;
+    union{StmtKind stmt; ExpKind exp;} kind;
+    union{TokenType op; int val; char* nome;} attr;
     ExpType type;
 }TreeNode;
 
