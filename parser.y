@@ -103,10 +103,10 @@ tipo_especificador: INT {
 params: param_lista{
     $$ = $1;
 }
-    |   VOID {
+    |   VOID {$$ = NULL;}; /*{
         $$ = newExpNode(ConstK); // o parametro é void, então cria-se um no do tipo void
         $$->type = Void;    //pode dar erro
-    };
+    };*/
 
 param_lista: param_lista VIRG param {
 

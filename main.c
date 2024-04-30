@@ -7,6 +7,7 @@
 #include <strings.h>
 #include "symtab.h"
 #include "semantic.h"
+#include "intermediario.h"
 
 //FILE * source_file;
 
@@ -51,6 +52,7 @@ int main(int argc, char *argv[])
   if(raiz != NULL){
     printTreeR(raiz);
     buildSymtab(raiz);
+    gerarIntermediario(raiz);
   }else{
     printf("Erro de sintaxe\n");
   
