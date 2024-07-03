@@ -129,6 +129,7 @@ void liberaRegs(char * registrador){
     int i = -1;
     strcpy(r,registrador);   //formata o nome do registrador para pegar o numero
     r[0] = '0';
+    r[1] = '0';
     i = atoi(r);
     regs[i] = 0;    // libera o registrador
 
@@ -293,7 +294,7 @@ char *cria_label(){
                 if(t->filho[0] != NULL){
                     a3.conteudo.val = t->filho[0]->attr.val;
                 }else{
-                    a3.conteudo.val = 0; // ERROR
+                    a3.conteudo.val = 0; // vetor de tam 0 ou argumento de função
                 }
                 insereQuad(allocaMemVet,a1,a2,a3);
             break;
@@ -407,6 +408,7 @@ char *cria_label(){
                 a2 = aux;
                 regDestino = solicitaReg();
                 if(regDestino != NULL){
+                    destino.type = String;
                     destino.conteudo.nome = (char*)malloc(strlen(regDestino)*sizeof(char));
                     strcpy(destino.conteudo.nome,regDestino);
                 }
@@ -475,10 +477,6 @@ char *cria_label(){
             destino.type = Vazio;
             insereQuad(loadVet,a1,a2,destino);
             aux = a2;
-            
-
-            
-            insereQuad(loadVet,a1,a2,destino);
 
 
             break;
@@ -500,11 +498,9 @@ void geraCodigo(TreeNode* raiz){
     }else{
         switch(raiz->nodeKind){
             case StmtK:
-                printf("S %i \n",raiz->kind.stmt);
                 geraCodigoStmt(raiz);
                 break;
             case ExpK:
-                printf("E %i \n",raiz->kind.exp);
                 geraCodigoExp(raiz);
                 break;
             default:
