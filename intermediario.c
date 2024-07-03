@@ -1,6 +1,7 @@
 #include "intermediario.h"
 #include "symtab.h"
 #include "util.h"
+#include "globals.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -17,11 +18,11 @@ const char* OpString[] = {"add","sub","divi","mul","fun","endF","call","param","
 void desempilhaReg(){   
     int i = 0;
     arg a1,a2;
+    a2.type = Vazio;
     for(i = 31;i>=0;i--){   // desempilha a pilha de regs
         if(regs[i] == 1){
             a1.type = Const;
             a1.conteudo.val = i;
-            a2.type = Vazio;
             insereQuad(desempilha,a1,a2,a2);
         }
     }
@@ -82,7 +83,7 @@ operacoes verificaOp(TokenType tok){
 void liberaRegEndFun(){
     for(int i = 0; i < 32; i++){
         if(regs[i] == 1){
-            regs[i] == 0;
+            regs[i] = 0;
         }
     }
 }
@@ -103,7 +104,7 @@ void insereQuad(operacoes op,arg a1,arg a2, arg destino){
         }
         temp->prox = novo;
     }
-    //printf("a");
+    
     if(op == add || op == mul || op == sub || op == divi || op == slt || 
 		op == sgt || op == slet || op == sget || op == set || op == sdt || op == storeVet)
     {
@@ -123,19 +124,14 @@ void insereQuad(operacoes op,arg a1,arg a2, arg destino){
     }
 
 void liberaRegs(char * registrador){
-    char r[3];
-    int i;
+    char* r;
+    r =(char*)malloc(strlen(registrador)*sizeof(char));
+    int i = -1;
     strcpy(r,registrador);   //formata o nome do registrador para pegar o numero
     r[0] = '0';
     i = atoi(r);
     regs[i] = 0;    // libera o registrador
 
-}
-
-void inicializaRegs(){
-    for(int i = 0; i < 32; i++){
-        regs[i] = 0;    // inicializa todos os registradores como disponiveis
-    }
 }
 
 char * solicitaReg(){
@@ -213,14 +209,14 @@ char *cria_label(){
                 arg conteudoAtribuicao;
                 conteudoAtribuicao = aux;
                 // verifica o que vai receber a atr
-                if(t->filho[0]->kind.exp == VarK){
+                if(t->filho[0]->kind.exp == VarIdK){
                     a1.type = String;
                     a1.conteudo.nome = (char*)malloc(strlen(t->filho[0]->attr.nome)*sizeof(char));
-                    strcpy(a1.conteudo.nome,t->filho[0]->attr.nome);
+                    strcpy(a1.conteudo.nome, t->filho[0]->attr.nome);
 
                     a2.type = String;
                     a2.conteudo.nome = (char*)malloc(strlen(t->filho[0]->escopo)*sizeof(char));
-                    strcpy(a2.conteudo.nome,t->filho[0]->escopo);
+                    strcpy(a2.conteudo.nome, t->filho[0]->escopo);
 
                     insereQuad(storeVar,conteudoAtribuicao,a1,a2);
 
@@ -281,7 +277,8 @@ char *cria_label(){
                 a2.conteudo.nome = (char*)malloc(strlen(t->attr.nome)*sizeof(char));
                 strcpy(a2.conteudo.nome,t->attr.nome);
 
-                insereQuad(allocaMemVar,a1,a2,a2);  // não usa reg pra alocar na memoria
+                a3.type = Vazio;
+                insereQuad(allocaMemVar,a1,a2,a3);  // não usa reg pra alocar na memoria
             break;
             case VetK :     //aloca vetor
                 a1.type = String;   // escopo do vetor
@@ -435,12 +432,10 @@ char *cria_label(){
             strcpy(a1.conteudo.nome,t->escopo);
             a2.conteudo.nome = (char*)malloc(strlen(t->attr.nome)*sizeof(char));
             strcpy(a2.conteudo.nome,t->attr.nome);
-
             regDestino = solicitaReg();
             destino.type = String;
             destino.conteudo.nome  = (char*)malloc(strlen(regDestino)*sizeof(char));
             strcpy(destino.conteudo.nome,regDestino);
-
             insereQuad(loadVar,a1,a2,destino);
             aux = destino;  // salva o registrador onde a variavel foi carregada
             break;
@@ -459,7 +454,6 @@ char *cria_label(){
             destino.type = String;
             destino.conteudo.nome = (char*)malloc(strlen(regDestino)*sizeof(char));
             strcpy(destino.conteudo.nome,regDestino);   //nome do registrador de destino salvo
-            
             insereQuad(loadVar,a1,a2,destino);  //carrega a var com o endereço do vet
 
             a1 = destino; // a1 vai carregar o endereço base no loadVet
@@ -489,10 +483,10 @@ char *cria_label(){
 
             break;
         case TypeK:
-                if(t->filho[0]->nodeKind == ExpK){
+                /*if(t->filho[0]->nodeKind == ExpK){
                     printf("%d \n",t->filho[0]->kind.exp);
                 }
-                printf("%d \n",t->filho[0]->kind.stmt);
+                printf("%d \n",t->filho[0]->kind.stmt);*/
                 geraCodigo(t->filho[0]);    // o filho do tipo é o que vai ter o valor
             break;
         default:
