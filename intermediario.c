@@ -565,7 +565,7 @@ void imprimeIntemediario()
 	printf("Codigo intermediario gerado...\n");
 }
 
-void gerarIntermediario(TreeNode *t)
+Quad* gerarIntermediario(TreeNode *t)
 {
 	int i = 0;
 	regs = malloc(32*sizeof(int));
@@ -575,5 +575,6 @@ void gerarIntermediario(TreeNode *t)
 	}
 	geraCodigo(t);
 	imprimeIntemediario();
+    return quadPrimeiro;
 	
 }

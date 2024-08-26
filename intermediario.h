@@ -32,7 +32,7 @@ void empilhaReg();
 void liberaRegEndFun();
 void insereQuad(operacoes op,arg a1,arg a2, arg destino);
 void liberaRegs(char * registrador);
-void gerarIntermediario(TreeNode *t);
+Quad * gerarIntermediario(TreeNode *t);
 void imprimeIntemediario();
 
 

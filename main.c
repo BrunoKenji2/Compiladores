@@ -8,6 +8,8 @@
 #include "symtab.h"
 #include "semantic.h"
 #include "intermediario.h"
+#include "assembler.h"
+#include "pilha.h"
 
 //FILE * source_file;
 
@@ -52,7 +54,9 @@ int main(int argc, char *argv[])
   if(raiz != NULL){
     printTreeR(raiz);
     buildSymtab(raiz);
-    gerarIntermediario(raiz);
+    Quad * firstInst = NULL;
+    firstInst = gerarIntermediario(raiz);
+    geraAssembly(firstInst);
   }else{
     printf("Erro de sintaxe\n");
   
