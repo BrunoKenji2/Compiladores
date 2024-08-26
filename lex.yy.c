@@ -902,58 +902,60 @@ case 27:
 YY_RULE_SETUP
 #line 43 "lex.l"
 {
-                int c;
-                while ( (c = input()) != '*' && c != EOF )
-                {
-                  if(c=='\n')
-                  {
-                    lineno = lineno +1;
+                char c;
+                int flag = 0;
+                while(flag != 2){
+                  c = input();
+                  if(c == '\n'){
+                    lineno++;
+                  }
+                  if(c == EOF){
+                    break;
+                  }else if(c == '/' && flag){
+                        flag++;
+                  }else if(c == '*' && !flag){
+                        flag++;
+                  }else{
+                    flag == 0;
                   }
                 }
-                if ( c == '*' )
-                {
-                    while ( (c = input()) == '*' );
-                    if ( c == '/' ) break;
-                }
-                if ( c == EOF )
-                    break;
             }
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 60 "lex.l"
+#line 62 "lex.l"
 return ID;
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 61 "lex.l"
+#line 63 "lex.l"
 return NUM;
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 62 "lex.l"
+#line 64 "lex.l"
 {};
 	YY_BREAK
 case YY_STATE_EOF(INITIAL):
-#line 63 "lex.l"
+#line 65 "lex.l"
 return 0;
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 64 "lex.l"
+#line 66 "lex.l"
 {return ERRO;}
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 65 "lex.l"
+#line 67 "lex.l"
 {return ERRO;}
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 66 "lex.l"
+#line 68 "lex.l"
 ECHO;
 	YY_BREAK
-#line 957 "lex.yy.c"
+#line 959 "lex.yy.c"
 
 	case YY_END_OF_BUFFER:
 		{
@@ -1956,7 +1958,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 66 "lex.l"
+#line 68 "lex.l"
 
 
 TokenType getToken(void)

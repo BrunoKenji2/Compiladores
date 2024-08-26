@@ -1,3 +1,8 @@
                     Nome                   Var/func  Tipo         Escopo                       Número de linhas
 -----------------------------------------  --------  ----  --------------------  ------------------------------------------------
-vet                                        variável  int   global                1, 
+main                                       funcao    void  global                11, 
+u                                          variável  int   gcd                   4, 6, 7, 7, 
+y                                          variável  int   main                  12, 13, 14, 
+gcd                                        funcao    int   global                4, 7, 14, 
+v                                          variável  int   gcd                   4, 6, 7, 7, 7, 
+x                                          variável  int   main                  12, 13, 14, 

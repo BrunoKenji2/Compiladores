@@ -1,1 +1,8 @@
 jump , main 
+beqz , r2 , r0 , L0 
+jump , 6 
+div , r3 , r4 , r5 
+(null) , r5 , r3 , r4 
+sub , r2 , r4 , r3 
+input , r28 
+input , r28 

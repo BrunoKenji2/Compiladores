@@ -41,21 +41,23 @@ ESPACO [ \r\t]+
 "{"     return ACH;
 "}"     return FCH;
 "/*"        {
-                int c;
-                while ( (c = input()) != '*' && c != EOF )
-                {
-                  if(c=='\n')
-                  {
-                    lineno = lineno +1;
+                char c;
+                int flag = 0;
+                while(flag != 2){
+                  c = input();
+                  if(c == '\n'){
+                    lineno++;
+                  }
+                  if(c == EOF){
+                    break;
+                  }else if(c == '/' && flag){
+                        flag++;
+                  }else if(c == '*' && !flag){
+                        flag++;
+                  }else{
+                    flag == 0;
                   }
                 }
-                if ( c == '*' )
-                {
-                    while ( (c = input()) == '*' );
-                    if ( c == '/' ) break;
-                }
-                if ( c == EOF )
-                    break;
             }
 {LETRA}+  return ID;
 {DIGITO}+ return NUM;
