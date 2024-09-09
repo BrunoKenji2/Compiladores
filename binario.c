@@ -63,7 +63,7 @@ char *  converteInst(NoInstrucao * ins){
             case MULT:
                 strcpy(funct,"000011");
                 break;
-            case DIV:
+            case DIVV:
                 strcpy(funct,"000100");
                 break;
             case AND:   //set less than

@@ -385,7 +385,7 @@ int pegaPosMemoria(char* nomeVar,char* nomeEscopo)
 
             if(!strcmp(q->arg1.conteudo.nome,"input")){
 
-                insereInstIO(INPUT,$rf);                //ESTUDAR COMO FUNCIONA A PARTE DE INPUT E OUTPUT
+                insereInstIO(INPUT,$rf);                
                 
             }else if(!strcmp(q->arg1.conteudo.nome,"output")){
                 if(pilhaParam->topo->tipo == 0){
