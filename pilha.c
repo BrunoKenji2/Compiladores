@@ -9,12 +9,14 @@ int pilhaVazia(Pilha *pilha) {
     return (pilha->topo == NULL);
 }
 
-void empilhar(Pilha *pilha, char *endereco) {
+void empilhar(Pilha *pilha, char *endereco,int tipo) {
     NoPilha *novoNo = (NoPilha*) malloc(sizeof(NoPilha));
-    novoNo->parametro = (char*)malloc(strlen(endereco)+1*sizeof(char));
+    novoNo->parametro = (char*)malloc(strlen(endereco)*sizeof(char));
     strcpy(novoNo->parametro, endereco);
     novoNo->prox = pilha->topo;
     pilha->topo = novoNo;
+    novoNo->tipo = tipo;
+
 }
 
 char* desempilhar(Pilha *pilha) {

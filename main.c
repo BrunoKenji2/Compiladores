@@ -10,6 +10,7 @@
 #include "intermediario.h"
 #include "assembler.h"
 #include "pilha.h"
+#include "binario.h"
 
 //FILE * source_file;
 
@@ -56,7 +57,9 @@ int main(int argc, char *argv[])
     buildSymtab(raiz);
     Quad * firstInst = NULL;
     firstInst = gerarIntermediario(raiz);
-    geraAssembly(firstInst);
+    NoInstrucao * assembly = NULL;
+    assembly = geraAssembly(firstInst);
+    geraBinario(assembly);
   }else{
     printf("Erro de sintaxe\n");
   

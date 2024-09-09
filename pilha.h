@@ -8,6 +8,7 @@
 typedef struct NoPilha{
     char * parametro;
     struct NoPilha * prox;
+    int tipo;
 }NoPilha;
 
 typedef struct Pilha {
@@ -17,7 +18,7 @@ typedef struct Pilha {
 
 void inicializarPilha(Pilha *pilha);
 int pilhaVazia(Pilha *pilha);
-void empilhar(Pilha *pilha, char *endereco);
+void empilhar(Pilha *pilha, char *endereco,int tipo);
 char* desempilhar(Pilha *pilha);
 void liberarPilha(Pilha *pilha);
 #endif

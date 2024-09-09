@@ -84,7 +84,20 @@ typedef struct instrucao{
 } Instrucao;
 */
 
-void geraAssembly(Quad * q);    //  faz o assembly a partir das quadruplas
+typedef struct variavel{
+    char* nome;
+    int posMemoria;
+    struct variavel * prox;
+}variavel;
+
+typedef struct escopos{
+    char* nome;
+    variavel * variaveis;
+    struct escopos * prox;
+    int mem; // quantidade de mem alocada naquele escopo
+}escopos;
+
+NoInstrucao * geraAssembly(Quad * q);    //  faz o assembly a partir das quadruplas
 void insereInstJ(instrucao inst, char * label); // insere instruções de jump
 void insereInstR(instrucao inst, registradores reg1, registradores reg2, registradores reg3);
 void insereInstI(instrucao isnt, registradores reg1, registradores reg2, char* imediato);
@@ -93,5 +106,6 @@ registradores pegaRegistrador(char * reg);
 void imprimeInstrucoes();
 void criaLabel(char* label);
 int pegaLinhaLabel(char * label);
-
+void insereVar(char * nomeVar,char * nomeEscopo, int posMemoria, int mem);
+void imprimeLabel();
 #endif
