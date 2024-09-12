@@ -41,7 +41,7 @@ char *  converteInst(NoInstrucao * ins){
 
     if(ins->tipo == 0){
         if(ins->inst == JUMP){
-            strcpy(opcode,"001111");
+            strcpy(opcode,"01");
             strcpy(endereco,decimalParaBinario(pegaLinhaLabel(ins->endereco),26));
             strcpy(binario,opcode);
             strcat(binario,endereco);

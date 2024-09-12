@@ -26,6 +26,7 @@ escopos * primeiroEscopo = NULL;
 escopos * ultimoEscopo = NULL;
 int sp = 0x7FFFFFFF; // pilha começa no endereço 0x7FFFFFFF
 int memLocG = 0; // memória local global
+int teste;
 
 char * ListaInstStr[43] = {"add","addi","sub","subi","mult","multi","div","divi","and","andi","or","ori",
 "slt","sgt","slet","sget","set","sdt","sgti","sleti","sgeti","seti","sdti","sll","srl","slti",
@@ -398,7 +399,7 @@ int pegaPosMemoria(char* nomeVar,char* nomeEscopo)
                 int numParam = q->arg2.conteudo.val;
                 int h = 1;
                 for(numParam;numParam > 0; numParam--){
-                    insereInstI(ADDI,$sp,$sp,"-4"); // aloca espaço na pilha
+                    insereInstI(SUBI,$sp,$sp,"4"); // aloca espaço na pilha
                     sprintf(temp,"%d",h*-4);
                     sp = sp -4;
                     if(pilhaParam->topo->tipo == 0){
@@ -548,7 +549,7 @@ int pegaPosMemoria(char* nomeVar,char* nomeEscopo)
             criaLabel(q->arg1.conteudo.nome);
             if(strcmp("main",q->arg1.conteudo.nome) != 0){
                 printf("fun %s\n",q->arg1.conteudo.nome);
-                insereInstI(ADDI,$sp,$sp,"-8");  // aumenta a pilha, note que a pilha cresce para baixo
+                insereInstI(SUBI,$sp,$sp,"8");  // aumenta a pilha, note que a pilha cresce para baixo
                 insereInstI(SW,$sp,$ra,"4");    // armazena o endereço de retorno na pilha na memoria para não perder
                 insereInstI(SW,$sp,$fp,"0");    //guarda o antigo $fp
                 insereInstI(ADDI,$sp,$fp,"0");  //atualiza o $fp
@@ -562,10 +563,10 @@ int pegaPosMemoria(char* nomeVar,char* nomeEscopo)
             if(strcmp("main",q->arg1.conteudo.nome)){
                 escopos * guardaNo = procuraEscopo(q->arg1.conteudo.nome); 
                 sprintf(temp,"%d",guardaNo->mem);
-                insereInstI(ADDI,$sp,$sp,temp); // reseta o $sp
+                insereInstI(SUBI,$sp,$sp,temp); // reseta o $sp
                 insereInstI(LW,$ra,$sp,"4");    // carrega o endereço de retorno que estava salvo na memoria, indicado por $fp
                 insereInstI(LW,$fp,$sp,"0");    // apos a execução da função o $fp volta para a sua origem
-                insereInstI(ADDI,$sp,$sp,"8");  // libera o espaço na pilha 
+                insereInstI(SUBI,$sp,$sp,"8");  // libera o espaço na pilha 
                 insereInstR(JR,$ra,$zero,$zero);  // incrementa o ponteiro da pilha
                 sp = sp - guardaNo->mem - 8;
             }
@@ -586,7 +587,7 @@ int pegaPosMemoria(char* nomeVar,char* nomeEscopo)
             if(!strcmp(q->arg1.conteudo.nome,"global")){
                 insereVar(q->arg2.conteudo.nome,q->arg1.conteudo.nome,0,4);
             }else{                
-                insereInstI(ADDI,$sp,$sp,"-4");
+                insereInstI(SUBI,$sp,$sp,"4");
                 sp = sp - 4;
                 insereInstI(SW,$zero,$sp,"0"); // deixa a posição de memoria guardada e atribui o valor 0 para elas
                 insereVar(q->arg2.conteudo.nome,q->arg1.conteudo.nome,sp,4);
@@ -606,9 +607,9 @@ int pegaPosMemoria(char* nomeVar,char* nomeEscopo)
             }else{
                     if(q->out.conteudo.val > 0){
                 
-                        sprintf(temp,"%d",q->out.conteudo.val*-4); // pega o numero de posições e multiplica por 4
+                        sprintf(temp,"%d",q->out.conteudo.val*4); // pega o numero de posições e multiplica por 4
                         sp = sp - q->out.conteudo.val*4;
-                        insereInstI(ADDI,$sp,$sp,temp);
+                        insereInstI(SUBI,$sp,$sp,temp);
                         insereVar(q->arg2.conteudo.nome,q->arg1.conteudo.nome,sp,q->out.conteudo.val*4);
 
                     }else if(q->out.conteudo.val == 0){
@@ -689,7 +690,7 @@ int pegaPosMemoria(char* nomeVar,char* nomeEscopo)
                 sprintf(temp,"$t%d",q->arg1.conteudo.val);
             }
             sp = sp -4;
-            insereInstI(ADDI,$sp,$sp,"-4");  // abre espaço na pilha e salva o valor do reg na pilha
+            insereInstI(SUBI,$sp,$sp,"4");  // abre espaço na pilha e salva o valor do reg na pilha
             insereInstI(SW,pegaRegistrador(temp),$sp,"0");
        }
     
