@@ -1,38 +1,9 @@
   Tipo: int
-    Funcão - int - gcd - Linha: 4 Escopo: global
+    Funcão - int - main - Linha: 1 Escopo: global
       Tipo: int
-        Var u Linha: 4 Escopo: gcd
-      Tipo: int
-        Var v Linha: 4 Escopo: gcd
-      If
-        Op: ==
-          VarID: v Line: 6 Escopo: gcd
-          Const: 0
-        Return
-          VarID: u Line: 6 Escopo: gcd
-        Return
-          Call: gcd Linha: 7
-            VarID: v Line: 7 Escopo: gcd
-            Op: -
-              VarID: u Line: 7 Escopo: gcd
-              Op: *
-                Op: /
-                  VarID: u Line: 7 Escopo: gcd
-                  VarID: v Line: 7 Escopo: gcd
-                VarID: v Line: 7 Escopo: gcd
-  Tipo: void
-    Funcão - void - main - Linha: 11 Escopo: global
-      Tipo: int
-        Var x Linha: 12 Escopo: main
-      Tipo: int
-        Var y Linha: 12 Escopo: main
+        Var i Linha: 2 Escopo: main
       Assign
-        VarID: x Line: 13 Escopo: main
-        Call: input Linha: 13
-      Assign
-        VarID: y Line: 13 Escopo: main
-        Call: input Linha: 13
-      Call: output Linha: 14
-        Call: gcd Linha: 14
-          VarID: x Line: 14 Escopo: main
-          VarID: y Line: 14 Escopo: main
+        VarID: i Line: 3 Escopo: main
+        Call: input Linha: 3
+      Call: output Linha: 4
+        VarID: i Line: 4 Escopo: main

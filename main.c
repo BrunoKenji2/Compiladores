@@ -65,7 +65,7 @@ int main(int argc, char *argv[])
   
   }
 
-
+  // problema no teste.txt -> -fp 
 
   /*while ((tok = getToken()) != ENDFILE && tok != ERROR)
   {

@@ -72,6 +72,18 @@ void insereInstR(instrucao inst,registradores reg1,registradores reg2,registrado
 
 void insereInstI(instrucao inst,registradores reg1,registradores reg2,char* imediato){
     // primeira instrucao é sempre um jump para o main
+        if(primeiraInstrucao == NULL){
+        primeiraInstrucao = (NoInstrucao*)malloc(sizeof(NoInstrucao));
+        primeiraInstrucao->inst = inst;
+        primeiraInstrucao->reg1 = reg1;
+        primeiraInstrucao->prox = NULL;
+        primeiraInstrucao->reg2 = reg2;
+        primeiraInstrucao->imediato = (char *)malloc(sizeof(char)*strlen(imediato));
+        strcpy(primeiraInstrucao->imediato, imediato);
+        primeiraInstrucao->tipo = 2;
+        ultimaInstrucao = primeiraInstrucao;
+    }else{
+        
         NoInstrucao * novo = (NoInstrucao*)malloc(sizeof(NoInstrucao));
         novo->inst = inst;
         novo->reg1 = reg1;
@@ -82,7 +94,7 @@ void insereInstI(instrucao inst,registradores reg1,registradores reg2,char* imed
         novo->tipo = 2;
         ultimaInstrucao->prox = novo;
         ultimaInstrucao = novo;
-    
+    }
     numLinhas++;
 }
 
@@ -298,6 +310,8 @@ int pegaPosMemoria(char* nomeVar,char* nomeEscopo)
  NoInstrucao * geraAssembly(Quad* q){
     char temp[50];
     char temp2[50];
+    insereInstI(ADDI,$sp,$sp,"2147483647");
+    insereInstI(ADDI,$fp,$fp,"2147483647");
     insereInstJ(JUMP,"main");  // vai direto para o main
     while(q != NULL){
         if(q->op == add){
@@ -378,7 +392,7 @@ int pegaPosMemoria(char* nomeVar,char* nomeEscopo)
         
         if(q->op == iff){       
             // iff
-            insereInstI(BEQZ,pegaRegistrador(q->arg1.conteudo.nome),$zero,q->arg2.conteudo.nome);
+            insereInstI(BEQ,pegaRegistrador(q->arg1.conteudo.nome),$aux,q->arg2.conteudo.nome);
         }
         
         
@@ -460,10 +474,12 @@ int pegaPosMemoria(char* nomeVar,char* nomeEscopo)
                 insereInstR(SLT,pegaRegistrador(q->arg1.conteudo.nome),pegaRegistrador(q->arg2.conteudo.nome),pegaRegistrador(q->out.conteudo.nome));
             }else if(q->arg1.type == Const && q->arg2.type == String){
                 sprintf(temp,"%d",q->arg1.conteudo.val);
-                insereInstI(SLTI,pegaRegistrador(q->arg2.conteudo.nome),pegaRegistrador(q->out.conteudo.nome),temp);
+                insereInstI(ADDI,$zero,$aux,temp);
+                insereInstR(SLT,pegaRegistrador(q->arg2.conteudo.nome),$aux,pegaRegistrador(q->out.conteudo.nome));
             }else if(q->arg1.type == String && q->arg2.type ==  Const){
                 sprintf(temp,"%d",q->arg2.conteudo.val);
-                insereInstI(SLTI,pegaRegistrador(q->arg1.conteudo.nome),pegaRegistrador(q->out.conteudo.nome),temp);
+                insereInstI(ADDI,$zero,$aux,temp);
+                insereInstR(SLT,pegaRegistrador(q->arg1.conteudo.nome),$aux,pegaRegistrador(q->out.conteudo.nome));
             }else{
                 // não tem slt com dois imediatos
             }
@@ -517,13 +533,29 @@ int pegaPosMemoria(char* nomeVar,char* nomeEscopo)
         if(q->op ==  set){ //igual
             if(q->arg1.type == String && q->arg2.type == String){
                 // set
-                insereInstR(SET,pegaRegistrador(q->arg1.conteudo.nome),pegaRegistrador(q->arg2.conteudo.nome),pegaRegistrador(q->out.conteudo.nome));
+                if(q->prox->op == iff){
+                    insereInstR(ADDI,$zero,pegaRegistrador(q->arg1.conteudo.nome),$aux);
+                    strcpy(q->prox->arg1.conteudo.nome,q->arg2.conteudo.nome);
+                }else{
+                    insereInstR(SET,pegaRegistrador(q->arg1.conteudo.nome),pegaRegistrador(q->arg2.conteudo.nome),pegaRegistrador(q->out.conteudo.nome));
+                }
+
             }else if(q->arg1.type == Const && q->arg2.type == String){
                 sprintf(temp,"%d",q->arg1.conteudo.val);
+                if(q->prox->op == iff){
+                    insereInstI(ADDI,$zero,$aux,temp);
+                    strcpy(q->prox->arg1.conteudo.nome,q->arg2.conteudo.nome);
+                }else{
                 insereInstI(SETI,pegaRegistrador(q->arg2.conteudo.nome),pegaRegistrador(q->out.conteudo.nome),temp);
+                }
             }else if(q->arg1.type == String && q->arg2.type ==  Const){
                 sprintf(temp,"%d",q->arg2.conteudo.val);
-                insereInstI(SETI,pegaRegistrador(q->arg1.conteudo.nome),pegaRegistrador(q->out.conteudo.nome),temp);
+                if(q->prox->op == iff){
+                    insereInstI(ADDI,$zero,$aux,temp);
+                    strcpy(q->prox->arg1.conteudo.nome,q->arg1.conteudo.nome);
+                }else{
+                    insereInstI(SETI,pegaRegistrador(q->arg1.conteudo.nome),pegaRegistrador(q->out.conteudo.nome),temp);
+                }
             }else{
             
             }
