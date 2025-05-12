@@ -146,7 +146,7 @@ char * solicitaReg(){
         return NULL;
     }else{
         regs[i] = 1;    // marca o registrador como ocupado
-        temp = (char*)malloc(4*sizeof(char)); // aloca espaço para o registrador
+        temp = (char*)malloc(5*sizeof(char)); // aloca espaço para o registrador
         sprintf(temp,"$t%d",i); // formata o nome do registrador
     }
     return temp;
