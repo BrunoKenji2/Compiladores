@@ -174,6 +174,7 @@ char *cria_label(){
 
 
         switch(t->kind.stmt){
+            /*calculo da condição no filho 0, gera iff, adição do bloco dentro do if */
             case IfK:
                 geraCodigo(t->filho[0]);    // condição do iff
                 a1 = aux;
@@ -187,6 +188,10 @@ char *cria_label(){
                 geraCodigo(t->filho[1]);    // bloco do if
 
                 if(t->filho[2] != NULL){    // se tiver else
+                    /*
+                    coloca o jump para pular o else(indica o fim o bloco if e add o label de inicio do else)
+                    gera codigo do bloco do else
+                    */
                     guardaLabel = cria_label();
                     arg endElse;
                     endElse.type = String;
@@ -206,10 +211,10 @@ char *cria_label(){
 
             break;
             case AssignK :
-                geraCodigo(t->filho[1]);    // x = atr, atr é o filho[1]
+                geraCodigo(t->filho[1]);    // x = atr, atr é o filho[1], calculo do valor da atribuição
                 arg conteudoAtribuicao;
                 conteudoAtribuicao = aux;
-                // verifica o que vai receber a atr
+                // verifica o que vai receber a atr, se é uma variavel ou vetor e coloca o store
                 if(t->filho[0]->kind.exp == VarIdK){
                     a1.type = String;
                     a1.conteudo.nome = (char*)malloc(strlen(t->filho[0]->attr.nome)*sizeof(char));
@@ -332,14 +337,14 @@ char *cria_label(){
             break;
             case ReturnK:
                 if(t->filho[0] != NULL){    // caso retorne algo
-                    geraCodigo(t->filho[0]);
-                    a1 = aux;
+                    geraCodigo(t->filho[0]); //calcula o retorno
+                    a1 = aux;   // pega o valor do retorno
                     char retorno[10] = "$rf"; // endereço de retorno
                     a2.conteudo.nome = (char*)malloc(10*sizeof(char));
                     a2.type = String;
                     strcpy(a2.conteudo.nome,retorno);
                     destino.type = Vazio;
-                    insereQuad(move,a1,a2,destino);
+                    insereQuad(move,a1,a2,destino); // move o retorno para o endereço de retorno RF
                 }
             break;
             case CallK:
@@ -348,14 +353,14 @@ char *cria_label(){
                     TreeNode* t_aux;
                     t_aux = t->filho[0];
                     while(t_aux != NULL){
-                        nParam++;
+                        nParam++;   //conta quantidade de parametros
                         switch (t_aux->nodeKind)
                         {
                         case StmtK:
-                            geraCodigoStmt(t_aux);    
+                            geraCodigoStmt(t_aux);    // gera o codigo do parametro
                         break;
                         case ExpK:
-                            geraCodigoExp(t_aux);
+                            geraCodigoExp(t_aux);   
                         break;
                         }
                         a1 = aux;
@@ -378,17 +383,18 @@ char *cria_label(){
     			strcpy(verificaInput,"input");
 
                 if(strcmp(verificaOutput,a1.conteudo.nome)!=0 && strcmp(verificaInput,a1.conteudo.nome)!=0)
-    				empilhaReg();   
+    				empilhaReg();   //salva as infos dos registradores antes de chamar a funcao
 
     			insereQuad(call,a1,a2,destino);
     			
     			if(strcmp(verificaOutput,a1.conteudo.nome)!=0 && strcmp(verificaInput,a1.conteudo.nome)!=0)
-    				desempilhaReg();
+    				desempilhaReg();    
+                    // libera os registradores usados na chamada da funcao
     			
     			aux.type = String;
     			char endRetorno[10] = "$rf";
     			aux.conteudo.nome = (char*) malloc(10*sizeof(char));
-    			strcpy(aux.conteudo.nome,endRetorno);
+    			strcpy(aux.conteudo.nome,endRetorno);   // pega o endereço de retorno
 
             break;
         }

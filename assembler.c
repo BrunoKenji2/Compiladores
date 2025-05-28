@@ -6,13 +6,6 @@
 
 
 /*
-    INSTRUÇÕES QUE FALTAM
-    -call
-    -move
-    -imprimir as labels e fazer com que elas ocupem linhas
-*/
-
-/*
     inst tipo 0 = jump
 */
 

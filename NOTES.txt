@@ -1,0 +1,1 @@
+Verificar o no else quando tem If else -> acho que já tem so que está como IFk e não está imprimindo-> verificar depois
