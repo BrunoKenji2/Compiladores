@@ -1,7 +1,109 @@
 addi , r30 , r30 , 0 
 addi , r29 , r29 , 0 
+jump , 107 
 sw , r0 , r0 , 63 
-jump , 5 
+sw , r30 , r31 , 0 
+addi , r30 , r30 , 1 
+sw , r30 , r29 , 0 
+addi , r30 , r30 , 1 
+subi , r30 , r29 , 2 
+addi , r30 , r30 , 1 
+addi , r30 , r30 , 1 
+addi , r30 , r30 , 1 
+addi , r30 , r30 , 1 
+addi , r30 , r30 , 1 
+addi , r30 , r30 , 1 
+lw , r29 , r1 , 3 
+sw , r29 , r1 , 7 
+lw , r29 , r1 , 2 
+lw , r29 , r2 , 3 
+add , r1 , r2 , r3 
+lw , r3 , r1 , 0 
+sw , r29 , r1 , 6 
+lw , r29 , r1 , 3 
+addi , r1 , r2 , 1 
+sw , r29 , r2 , 5 
+lw , r29 , r1 , 5 
+lw , r29 , r2 , 4 
+slt , r1 , r2 , r3 
+beq , r3 , r0 , L1 
+lw , r29 , r1 , 2 
+lw , r29 , r2 , 5 
+add , r1 , r2 , r3 
+lw , r3 , r1 , 0 
+lw , r29 , r2 , 6 
+slt , r1 , r2 , r3 
+beq , r3 , r0 , L2 
+lw , r29 , r1 , 2 
+lw , r29 , r2 , 5 
+add , r1 , r2 , r3 
+lw , r3 , r1 , 0 
+sw , r29 , r1 , 6 
+lw , r29 , r1 , 5 
+sw , r29 , r1 , 7 
+lw , r29 , r1 , 5 
+addi , r1 , r2 , 1 
+sw , r29 , r2 , 5 
+jump , 26 
+lw , r29 , r1 , 7 
+addi , r1 , r28 , 0 
+subi , r30 , r30 , 8 
+lw , r29 , r31 , 0 
+lw , r29 , r29 , 1 
+jr , r31 , r0 , r0 
+sw , r30 , r31 , 0 
+addi , r30 , r30 , 1 
+sw , r30 , r29 , 0 
+addi , r30 , r30 , 1 
+subi , r30 , r29 , 2 
+addi , r30 , r30 , 1 
+addi , r30 , r30 , 1 
+addi , r30 , r30 , 1 
+addi , r30 , r30 , 1 
+addi , r30 , r30 , 1 
+lw , r29 , r1 , 3 
+sw , r29 , r1 , 5 
+lw , r29 , r1 , 5 
+lw , r29 , r2 , 4 
+subi , r2 , r3 , 1 
+slt , r1 , r3 , r2 
+beq , r2 , r0 , L4 
+sw , r30 , r0 , 0 
+addi , r30 , r30 , 1 
+lw , r29 , r1 , 2 
+lw , r29 , r2 , 5 
+lw , r29 , r3 , 4 
+sw , r30 , r1 , 2 
+sw , r30 , r2 , 3 
+sw , r30 , r3 , 4 
+jal , 5 
+sw , r29 , r28 , 6 
+lw , r29 , r1 , 2 
+lw , r29 , r4 , 6 
+add , r1 , r4 , r5 
+lw , r5 , r1 , 0 
+sw , r29 , r1 , 7 
+lw , r29 , r1 , 2 
+lw , r29 , r4 , 5 
+add , r1 , r4 , r5 
+lw , r5 , r1 , 0 
+lw , r29 , r4 , 2 
+lw , r29 , r5 , 6 
+add , r4 , r5 , r6 
+sw , r6 , r1 , 0 
+lw , r29 , r1 , 7 
+lw , r29 , r4 , 2 
+lw , r29 , r5 , 5 
+add , r4 , r5 , r6 
+sw , r6 , r1 , 0 
+lw , r29 , r1 , 5 
+addi , r1 , r4 , 1 
+sw , r29 , r4 , 5 
+jump , 66 
+subi , r30 , r30 , 8 
+lw , r29 , r31 , 0 
+lw , r29 , r29 , 1 
+jr , r31 , r0 , r0 
 sw , r30 , r0 , 0 
 addi , r30 , r30 , 1 
 addi , r0 , r27 , 0 
@@ -9,7 +111,7 @@ sw , r29 , r27 , 0
 lw , r29 , r1 , 0 
 addi , r0 , r27 , 10 
 slt , r1 , r27 , r2 
-beq , r2 , r0 , L1 
+beq , r2 , r0 , L6 
 input , r28 
 output , r28 
 lw , r0 , r1 , 63 
@@ -19,19 +121,26 @@ sw , r3 , r28 , 0
 lw , r29 , r1 , 0 
 addi , r1 , r2 , 1 
 sw , r29 , r2 , 0 
-jump , 9 
+jump , 111 
+lw , r0 , r1 , 63 
+sw , r30 , r1 , 2 
+addi , r0 , r27 , 0 
+sw , r30 , r27 , 3 
+addi , r0 , r27 , 10 
+sw , r30 , r27 , 4 
+jal , 54 
 addi , r0 , r27 , 0 
 sw , r29 , r27 , 0 
-lw , r29 , r1 , 0 
+lw , r29 , r2 , 0 
 addi , r0 , r27 , 10 
-slt , r1 , r27 , r2 
-beq , r2 , r0 , L3 
-lw , r0 , r1 , 63 
-lw , r29 , r2 , 0 
-add , r1 , r2 , r3 
-lw , r3 , r1 , 0 
-output , r1 
-lw , r29 , r2 , 0 
-addi , r2 , r3 , 1 
-sw , r29 , r3 , 0 
-jump , 25 
+slt , r2 , r27 , r3 
+beq , r3 , r0 , L8 
+lw , r0 , r2 , 63 
+lw , r29 , r3 , 0 
+add , r2 , r3 , r4 
+lw , r4 , r2 , 0 
+output , r2 
+lw , r29 , r3 , 0 
+addi , r3 , r4 , 1 
+sw , r29 , r4 , 0 
+jump , 134 

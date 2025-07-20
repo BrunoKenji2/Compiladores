@@ -323,7 +323,7 @@ int pegaPosMemoria(char* nomeVar,char* nomeEscopo)
     char temp2[50];
     insereInstI(ADDI,$sp,$sp,"0");
     insereInstI(ADDI,$fp,$fp,"0");
-    while(flagAlocGlobal == 1)
+    /*while(flagAlocGlobal == 1)
     {
         if(q->op == allocaMemVar)
         {
@@ -357,7 +357,9 @@ int pegaPosMemoria(char* nomeVar,char* nomeEscopo)
         }
         
     }
-    
+        */
+       insereInstJ(JUMP,"main");
+    printf("Memoria global alocada %d\n",memLocG);
     while(q != NULL){
         //Intruções R
         if(q->op == add){
