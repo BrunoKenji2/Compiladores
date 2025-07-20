@@ -86,7 +86,8 @@ typedef struct instrucao{
 
 typedef struct variavel{
     char* nome;
-    int posMemoria;
+    int posMemoria; //posicao da varival na memoria bruta
+    int posicaoMemEscopo; //posicao da varivel em relacao ao fp
     struct variavel * prox;
 }variavel;
 

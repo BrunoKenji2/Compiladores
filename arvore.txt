@@ -1,38 +1,38 @@
   Tipo: int
-    Funcão - int - gcd - Linha: 4 Escopo: global
-      Tipo: int
-        Var u Linha: 4 Escopo: gcd
-      Tipo: int
-        Var v Linha: 4 Escopo: gcd
-      If
-        Op: ==
-          VarID: v Line: 6 Escopo: gcd
-          Const: 0
-        Return
-          VarID: u Line: 6 Escopo: gcd
-        Return
-          Call: gcd Linha: 7
-            VarID: v Line: 7 Escopo: gcd
-            Op: -
-              VarID: u Line: 7 Escopo: gcd
-              Op: *
-                Op: /
-                  VarID: u Line: 7 Escopo: gcd
-                  VarID: v Line: 7 Escopo: gcd
-                VarID: v Line: 7 Escopo: gcd
+    Vetor vet Linha: 1 Escopo: global
+      Const: 10
   Tipo: void
-    Funcão - void - main - Linha: 11 Escopo: global
+    Funcão - void - main - Linha: 2 Escopo: global
       Tipo: int
-        Var x Linha: 12 Escopo: main
-      Tipo: int
-        Var y Linha: 12 Escopo: main
+        Var i Linha: 4 Escopo: main
       Assign
-        VarID: x Line: 13 Escopo: main
-        Call: input Linha: 13
+        VarID: i Line: 5 Escopo: main
+        Const: 0
+      while
+        Op: <
+          VarID: i Line: 6 Escopo: main
+          Const: 10
+        Assign
+          VetID: vet Line: 7 Escopo: main
+            VarID: i Line: 7 Escopo: main
+          Call: input Linha: 7
+        Assign
+          VarID: i Line: 8 Escopo: main
+          Op: +
+            VarID: i Line: 8 Escopo: main
+            Const: 1
       Assign
-        VarID: y Line: 13 Escopo: main
-        Call: input Linha: 13
-      Call: output Linha: 14
-        Call: gcd Linha: 14
-          VarID: x Line: 14 Escopo: main
-          VarID: y Line: 14 Escopo: main
+        VarID: i Line: 11 Escopo: main
+        Const: 0
+      while
+        Op: <
+          VarID: i Line: 12 Escopo: main
+          Const: 10
+        Call: output Linha: 13
+          VetID: vet Line: 13 Escopo: main
+            VarID: i Line: 13 Escopo: main
+        Assign
+          VarID: i Line: 14 Escopo: main
+          Op: +
+            VarID: i Line: 14 Escopo: main
+            Const: 1

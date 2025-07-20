@@ -33,10 +33,10 @@ char* decimalParaBinario(int numero, int size) {
 }
 
 char *  converteInst(NoInstrucao * ins){
-    char * rs = (char *)malloc(sizeof(char)*6);
-    char * rt = (char *)malloc(sizeof(char)*6);
-    char * rd = (char *)malloc(sizeof(char)*6);
-    char * imediato = (char *)malloc(sizeof(char)*17);
+    char * rs = (char *)malloc(sizeof(char)*7);
+    char * rt = (char *)malloc(sizeof(char)*7);
+    char * rd = (char *)malloc(sizeof(char)*7);
+    char * imediato = (char *)malloc(sizeof(char)*15);
     char * endereco = (char *)malloc(sizeof(char)*27);
     char * funct = (char *)malloc(sizeof(char)*7);
     char * opcode = (char *)malloc(sizeof(char)*7);
@@ -44,42 +44,43 @@ char *  converteInst(NoInstrucao * ins){
 
     if(ins->tipo == 0){
         if(ins->inst == JUMP){
-            strcpy(opcode,"010100");
-            strcpy(endereco,decimalParaBinario(pegaLinhaLabel(ins->endereco),26));
+            strcpy(opcode,"011100");
+            strcpy(endereco,decimalParaBinario(pegaLinhaLabel(ins->endereco)-1,26));
+            printf("linha label %s %d\n",ins->endereco,pegaLinhaLabel(ins->endereco));
             strcpy(binario,opcode);
             strcat(binario,endereco);
         }else if(ins->inst == JAL){
-            strcpy(opcode,"010110");
-            strcpy(endereco,decimalParaBinario(pegaLinhaLabel(ins->endereco),26));
+            strcpy(opcode,"011101");
+            strcpy(endereco,decimalParaBinario(pegaLinhaLabel(ins->endereco)-1,26));
             strcpy(binario,opcode);
             strcat(binario,endereco);
         }
     }else if(ins->tipo == 1){
-        strcpy(funct,"000000");
+        strcpy(funct,"000");
         switch(ins->inst){
             case ADD:
-                strcpy(opcode,"000000");
+                strcpy(opcode,"000000");         
                 break;
             case SUBB:
-                strcpy(opcode,"000010");
+                strcpy(opcode,"000001");
                 break;
             case MULT:
-                strcpy(opcode,"000100");
+                strcpy(opcode,"000010");
                 break;
             case DIVV:
-                strcpy(opcode,"000110");
+                strcpy(opcode,"000011");
                 break;
             case AND:   //set less than
-                strcpy(opcode,"001001");
+                strcpy(opcode,"000100");
                 break;
             case OR:
-                strcpy(opcode,"001011");
+                strcpy(opcode,"000101");
                 break;
             case SLT:
                 strcpy(opcode,"001000");
                 break;
             case SGT:
-                strcpy(opcode,"001000");
+                strcpy(opcode,"");
                 break;
             case SLET:
                 strcpy(opcode,"001001");
@@ -88,7 +89,7 @@ char *  converteInst(NoInstrucao * ins){
                 strcpy(opcode,"001010");
                 break;
             case SET:
-                strcpy(opcode,"001011");
+                strcpy(opcode,"100011");
                 break;
             case SDT:
                 strcpy(opcode,"001100");
@@ -103,13 +104,13 @@ char *  converteInst(NoInstrucao * ins){
                 strcpy(opcode,"001111");
                 break;
             case JR:
-                strcpy(opcode,"010101");
+                strcpy(opcode,"001100");
                 break;
         }
         if(ins->inst == JR){
-            strcpy(rs,decimalParaBinario(ins->reg1,5));
-            strcpy(rt,"00000");
-            strcpy(rd,"00000");
+            strcpy(rs,decimalParaBinario(ins->reg1,6));
+            strcpy(rt,"000000");
+            strcpy(rd,"000000");
             strcpy(imediato,"00000");
             strcpy(binario,opcode);
             strcat(binario,rs);
@@ -118,9 +119,9 @@ char *  converteInst(NoInstrucao * ins){
             strcat(binario,imediato);
             strcat(binario,funct);
         }else{
-            strcpy(rs,decimalParaBinario(ins->reg1,5));
-            strcpy(rt,decimalParaBinario(ins->reg2,5));
-            strcpy(rd,decimalParaBinario(ins->reg3,5));
+            strcpy(rs,decimalParaBinario(ins->reg1,6));
+            strcpy(rt,decimalParaBinario(ins->reg2,6));
+            strcpy(rd,decimalParaBinario(ins->reg3,6));
             strcpy(imediato,"00000");
             strcpy(binario,opcode);
             strcat(binario,rs);
@@ -133,9 +134,9 @@ char *  converteInst(NoInstrucao * ins){
     }else if(ins->tipo == 2){
         // inst I
         if(ins->inst == ADDI){
-            strcpy(opcode,"000001");
+            strcpy(opcode,"001111");
         }else if(ins->inst == SUBI){
-            strcpy(opcode,"000011");
+            strcpy(opcode,"010000");
         }else if(ins->inst == MULTI){
             strcpy(opcode,"000101");
         }else if(ins->inst == DIVI){
@@ -147,7 +148,7 @@ char *  converteInst(NoInstrucao * ins){
         }else if(ins->inst == SLTI){
             strcpy(opcode,"000111");
         }else if(ins->inst == SGTI){
-            strcpy(opcode,"001000");
+            strcpy(opcode,"");
         }else if(ins->inst == SLETI){
             strcpy(opcode,"001001");
         }else if(ins->inst == SGETI){
@@ -165,20 +166,24 @@ char *  converteInst(NoInstrucao * ins){
         }else if(ins->inst == BEQZ){
             strcpy(opcode,"010111");
         }else if(ins->inst == BEQ){
-            strcpy(opcode,"010001");
+            strcpy(opcode,"010011");
         }else if(ins->inst == BNE){
             strcpy(opcode,"011000");
         }else if(ins->inst == LW){
-            strcpy(opcode,"010000");
+            strcpy(opcode,"011001");
         }else if(ins->inst == SW){
-            strcpy(opcode,"010010");
+            strcpy(opcode,"011010");
         }else if(ins->inst == LUI){
             strcpy(opcode,"010101");
         }
-
-        strcpy(rs,decimalParaBinario(ins->reg1,5));
-        strcpy(rt,decimalParaBinario(ins->reg2,5));
-        strcpy(imediato,decimalParaBinario(atoi(ins->imediato),16));
+        if(ins->inst == BEQ){
+            strcpy(imediato,decimalParaBinario(pegaLinhaLabel(ins->imediato)-1,14));
+        }else{
+            strcpy(imediato,decimalParaBinario(atoi(ins->imediato),14));
+        
+        }
+        strcpy(rs,decimalParaBinario(ins->reg1,6));
+        strcpy(rt,decimalParaBinario(ins->reg2,6));
         strcpy(binario,opcode);
         strcat(binario,rs);
         strcat(binario,rt);
@@ -186,17 +191,26 @@ char *  converteInst(NoInstrucao * ins){
     }else if(ins->tipo == 3){
         // inst IO
         if(ins->inst == INPUT){
-            strcpy(opcode,"011011");
+            strcpy(opcode,"100010");
+            strcat(binario,opcode);
+            strcpy(rs,decimalParaBinario(ins->reg1,6));
+            strcpy(rt,"000000");
+            strcat(binario,rt);
+            strcat(binario,rt);
+            strcat(binario,rs);
+            strcat(binario,"00000000");
         }else if(ins->inst == OUTPUT){
-            strcpy(opcode,"011100");
+            strcpy(opcode,"100000");
+            strcpy(rs,decimalParaBinario(ins->reg1,6));
+            strcpy(rt,"000000");
+            strcpy(imediato,"00000000000000");
+            strcpy(binario,opcode);
+            strcat(binario,rs);
+            strcat(binario,rt);
+            strcat(binario,imediato);
+            
         }
-        strcpy(rs,"00000");
-        strcpy(rt,"00000");
-        strcpy(imediato,"0000000000000000");
-        strcpy(binario,opcode);
-        strcat(binario,rs);
-        strcat(binario,rt);
-        strcat(binario,imediato);
+        
     }
     
     return binario;

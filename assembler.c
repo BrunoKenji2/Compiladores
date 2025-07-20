@@ -7,6 +7,9 @@
 
 /*
     inst tipo 0 = jump
+    SW => SW(REGBASE, REGDATA, IMEDIATO)
+    LW => LW(REGBASE, REGDEST, IMEDIATO)
+    para o futuro remover tudo relacioando ao sp -> varivel nao o registrador
 */
 
 NoInstrucao * primeiraInstrucao = NULL;
@@ -17,10 +20,12 @@ noLabel * primeiraLabel = NULL;
 noLabel * ultimaLabel = NULL;
 escopos * primeiroEscopo = NULL;
 escopos * ultimoEscopo = NULL;
-int sp = 0x7FFFFFFF; // pilha começa no endereço 0x7FFFFFFF
+int sp = 0; // pilha começa no endereço 0x7FFFFFFF
 int memLocG = 0; // memória local global
 int teste;
-
+int numeroDeParametros = 0;
+int flagAlocGlobal = 1; // flag para saber se eu estou alocando variaveis globais ou nao
+int flagAlocacaoParam = 0; // flag para saber se eu estou alocando parametros ou nao
 char * ListaInstStr[43] = {"add","addi","sub","subi","mult","multi","div","divi","and","andi","or","ori",
 "slt","sgt","slet","sget","set","sdt","sgti","sleti","sgeti","seti","sdti","sll","srl","slti",
 "mod","jr","modi","bltz","bgtz","beqz","beq","bne","lw","sw","jump","jal","halt","nop","input","output","lui"};
@@ -236,11 +241,12 @@ escopos * procuraEscopo(char * nome){
     return NULL;
 }
 
-variavel * criaVariavel(char * nome, int posMemoria){
+variavel * criaVariavel(char * nome, int posMemoria, int posMemEscopo){
     variavel * novo = (variavel*)malloc(sizeof(variavel));
     novo->nome = (char*)malloc(strlen(nome)*sizeof(char));
     strcpy(novo->nome,nome);
     novo->posMemoria = posMemoria;
+    novo->posicaoMemEscopo = posMemEscopo;
     novo->prox = NULL;
     return novo;
 }
@@ -261,28 +267,40 @@ void insereVar(char * nomeVar, char* nomeEscopo, int posMemoria, int memSize){
 
         }
     }
-    escopo->mem = escopo->mem + memSize; // aloca 4 bytes para cada variavel
+    escopo->mem = escopo->mem + memSize; // aloca 1 para cada variavel
+    printf("Variavel %s alocada no escopo %s na posicao %d\n",nomeVar,nomeEscopo,escopo->mem);
     variavel * aux = escopo->variaveis;
     if(strcmp(nomeEscopo,"global") == 0){
         if(aux == NULL){
-            escopo->variaveis = criaVariavel(nomeVar,memLocG);
+            //se ainda nao ha variaveis
+            escopo->variaveis = criaVariavel(nomeVar,63-memLocG,memLocG);
         }else{
             while(aux->prox != NULL && aux != NULL){
                 aux = aux->prox;
             }
-        aux->prox = criaVariavel(nomeVar,memLocG);
+        aux->prox = criaVariavel(nomeVar,63-memLocG,memLocG);
         memLocG = memLocG + memSize; // atualiza o valor da memoria global
 
         }
-    }else{
+    }else if(strcmp(nomeEscopo,"main") == 0){
         if(aux == NULL){
-            escopo->variaveis = criaVariavel(nomeVar,posMemoria);
+            escopo->variaveis = criaVariavel(nomeVar,posMemoria,escopo->mem-1);
         }else{
             while(aux->prox != NULL && aux != NULL){
                  aux = aux->prox;
             }
-        aux->prox = criaVariavel(nomeVar,posMemoria);
+        aux->prox = criaVariavel(nomeVar,posMemoria,escopo->mem-1);
 
+        }
+    }else{
+        if(aux == NULL){
+            // tem +1 por causa do $ra e $fp
+            escopo->variaveis = criaVariavel(nomeVar,posMemoria,escopo->mem-1);
+        }else{
+            while(aux->prox != NULL && aux != NULL){
+                 aux = aux->prox;
+            }
+        aux->prox = criaVariavel(nomeVar,posMemoria,escopo->mem-1);
         }
     }
 }
@@ -293,7 +311,7 @@ int pegaPosMemoria(char* nomeVar,char* nomeEscopo)
     variavel * aux = escopo->variaveis;
     while(aux != NULL){
         if(strcmp(aux->nome,nomeVar) == 0){
-            return aux->posMemoria;
+            return aux->posicaoMemEscopo; // retorna a posição de memória da variável em relação ao fp
         }
         aux = aux->prox;
     }
@@ -303,16 +321,51 @@ int pegaPosMemoria(char* nomeVar,char* nomeEscopo)
  NoInstrucao * geraAssembly(Quad* q){
     char temp[50];
     char temp2[50];
-    insereInstI(ADDI,$sp,$sp,"2147483647");
-    insereInstI(ADDI,$fp,$fp,"2147483647");
-    insereInstJ(JUMP,"main");  // vai direto para o main
+    insereInstI(ADDI,$sp,$sp,"0");
+    insereInstI(ADDI,$fp,$fp,"0");
+    while(flagAlocGlobal == 1)
+    {
+        if(q->op == allocaMemVar)
+        {
+            flagAlocGlobal = 1;
+            sprintf(temp,"%d",63-memLocG);
+            insereInstI(SW,$zero,$zero,temp);
+            insereVar(q->arg2.conteudo.nome,q->arg1.conteudo.nome,63-memLocG,1);
+            q = q->prox;
+
+        }
+        else if( q->op == allocaMemVet)
+        {
+            if(q->out.conteudo.val > 0)
+                {
+                    flagAlocGlobal = 1;
+                    insereVar(q->arg2.conteudo.nome,q->arg1.conteudo.nome,0,q->out.conteudo.val);
+                    sprintf(temp,"%d",63-memLocG); // pega a memoria global gasta - o topo
+                    insereInstI(SW,$zero,$zero,temp); // guarda o vetor na memoria global
+                }else
+                {
+                    insereVar(q->arg2.conteudo.nome,q->arg1.conteudo.nome,0,1);
+                    sprintf(temp,"%d",63-memLocG); // pega a memoria global gasta - o topo
+                    insereInstI(SW,$zero,$zero,temp); // guarda o vetor na memoria global
+                }
+            q = q->prox;        
+        }
+        else
+        {
+            flagAlocGlobal = 0;
+            insereInstJ(JUMP,"main");  // vai direto para o main
+        }
+        
+    }
+    
     while(q != NULL){
+        //Intruções R
         if(q->op == add){
             if(q->arg1.type == String && q->arg2.type == String){
-                // add
+                // add -> rt = rd + rs
                 insereInstR(ADD,pegaRegistrador(q->arg1.conteudo.nome),pegaRegistrador(q->arg2.conteudo.nome),pegaRegistrador(q->out.conteudo.nome));
             }else if(q->arg1.type == String && q->arg2.type == Const){
-                // addi
+                // addi -> rt = rs + immediate
                 sprintf(temp,"%d",q->arg2.conteudo.val);
                 insereInstI(ADDI,pegaRegistrador(q->arg1.conteudo.nome),pegaRegistrador(q->out.conteudo.nome),temp);
 
@@ -384,51 +437,66 @@ int pegaPosMemoria(char* nomeVar,char* nomeEscopo)
         }
         
         if(q->op == iff){       
-            // iff
-            insereInstI(BEQ,pegaRegistrador(q->arg1.conteudo.nome),$aux,q->arg2.conteudo.nome);
+            // iff -> se falso entra, não da branch
+            insereInstI(BEQ,pegaRegistrador(q->arg1.conteudo.nome),$zero,q->arg2.conteudo.nome);
         }
         
         
         if(q->op == call){
-
+            int numParam = q->arg2.conteudo.val; // pega o numero de parametros da chamada
+            char * paramList[numParam];
+            int tiposParam[numParam];
+            int i = 0;
+            int refParam = 0;
             if(!strcmp(q->arg1.conteudo.nome,"input")){
-
                 insereInstIO(INPUT,$rf);                
-                
+                insereInstIO(OUTPUT,$rf); // imprime o valor lido
             }else if(!strcmp(q->arg1.conteudo.nome,"output")){
                 if(pilhaParam->topo->tipo == 0){
                     insereInstI(ADDI,$zero,$aux,desempilhar(pilhaParam));
-                    insereInstIO(OUTPUT,$aux);  // desempilha no aux e joga o output
+                    insereInstIO(OUTPUT,$aux);  // desempilha os parametros imediatos, carregando eles no aux e joga o output
                 }else if(pilhaParam->topo->tipo == 1){
+                    // desempilha o registrador e joga no output -- tipo = 1 => output é um registrador
                     insereInstIO(OUTPUT,pegaRegistrador(desempilhar(pilhaParam)));
                 }
             }else{
-                int numParam = q->arg2.conteudo.val;
-                int h = 1;
-                for(numParam;numParam > 0; numParam--){
-                    insereInstI(SUBI,$sp,$sp,"4"); // aloca espaço na pilha
-                    sprintf(temp,"%d",h*-4);
-                    sp = sp -4;
-                    if(pilhaParam->topo->tipo == 0){
-                        insereInstI(ADDI,$zero,$aux,desempilhar(pilhaParam));
-                        insereInstI(SW,$fp,$aux,temp);
-                    }else if(pilhaParam->topo->tipo == 1){
-                        insereInstI(SW,$fp,pegaRegistrador(desempilhar(pilhaParam)),temp);
-                    }
-                }
+                //chamada de função => salva o numero de parametros para desempilhar ao allocar os parametros na funcao
+                numeroDeParametros = q->arg2.conteudo.val; // salva o numero de parametros para localizar o offset dos parametros
+                 for(i = 0; i < numParam; i++){
+                     tiposParam[i] = pilhaParam->topo->tipo; // guarda o tipo do parametro
+                     paramList[i] = (char*)malloc(strlen(pilhaParam->topo->parametro)*sizeof(char));
+                     strcpy(paramList[i],desempilhar(pilhaParam)); // desempilha os parametros
+                 }
+                 int contAux = 0;
+                 for(i = numParam; i > 0; i--)
+                 {
+                    
+                    /*
+                        sw sempre com 2 a mais dando espaco para o ra e o fp que sao obrigatorios, e depois nos allocaMem o $sp sera atualizado de verdade
+                    */
+                    sprintf(temp,"%d",2+contAux); // cria o nome do parametro
+                     if(tiposParam[i-1] == 0)
+                     {
+                        
+                         //insereVar(temp,q->arg1.conteudo.nome,refParam,1); // insere a variavel no escopo
+                         insereInstI(ADDI,$zero,$aux,paramList[i-1]); // transforma o valor imediato em string
+                         insereInstI(SW,$sp,$aux,temp); // armazena o parametro na pilha
+                     }else
+                     {
+                         // tipo 1 => registrador
+                         //insereVar(temp,q->arg1.conteudo.nome,refParam,1); // insere a variavel no escopo
+                         insereInstI(SW,$sp,pegaRegistrador(paramList[i-1]),temp);
+                     }
+                     contAux++;
+                 }
+                
                 insereInstJ(JAL,q->arg1.conteudo.nome);
-                /*
-                insereInstI(ADDI,$fp,$sp,"0");  //atualiza o $sp
-                insereInstI(LW,$fp,$fp,"0");    //carrega o antigo $fp
-                não precisa fazer isso pois, esse procedimento já é feito no final da função
-                */
-                //fazer uma pilha de parametros
             }
 
         }
     
         if(q->op == param){
-
+            
             if(pilhaParam == NULL){
                 pilhaParam =(Pilha*)malloc(sizeof(Pilha));
                 inicializarPilha(pilhaParam);
@@ -436,9 +504,11 @@ int pegaPosMemoria(char* nomeVar,char* nomeEscopo)
             }
             
             if(q->arg1.type == Const){
+                // transforma o valor inteiro em string e empilha tipo 0
                 sprintf(temp,"%d",q->arg1.conteudo.val);
                 empilhar(pilhaParam,temp,0);
             }else{
+                // empilha o nome do registrador tipo 1
                 empilhar(pilhaParam,q->arg1.conteudo.nome,1);
             }
         }
@@ -446,8 +516,10 @@ int pegaPosMemoria(char* nomeVar,char* nomeEscopo)
         if(q->op == move){
             if(q->arg1.type == Const){
                 sprintf(temp,"%d",q->arg1.conteudo.val);
+                //adiciona o valor imediato no registrador com o ADDI
                 insereInstI(ADDI,$zero,pegaRegistrador(q->arg2.conteudo.nome),temp);
             }else{
+                // move -> copia o valor de um registrador para outro
                 insereInstI(ADDI,pegaRegistrador(q->arg1.conteudo.nome),pegaRegistrador(q->arg2.conteudo.nome),"0");
             }
         }
@@ -463,11 +535,12 @@ int pegaPosMemoria(char* nomeVar,char* nomeEscopo)
         if(q->op == slt){
 
             if(q->arg1.type == String && q->arg2.type == String){
-                // set less than
+                // set less than "<"
                 insereInstR(SLT,pegaRegistrador(q->arg1.conteudo.nome),pegaRegistrador(q->arg2.conteudo.nome),pegaRegistrador(q->out.conteudo.nome));
             }else if(q->arg1.type == Const && q->arg2.type == String){
                 sprintf(temp,"%d",q->arg1.conteudo.val);
                 insereInstI(ADDI,$zero,$aux,temp);
+                // insere o valor do imediato no $aux para realizar a comparação
                 insereInstR(SLT,pegaRegistrador(q->arg2.conteudo.nome),$aux,pegaRegistrador(q->out.conteudo.nome));
             }else if(q->arg1.type == String && q->arg2.type ==  Const){
                 sprintf(temp,"%d",q->arg2.conteudo.val);
@@ -477,10 +550,11 @@ int pegaPosMemoria(char* nomeVar,char* nomeEscopo)
                 // não tem slt com dois imediatos
             }
         }
-
+        /*
+        REVER PARA O FUTURO
         if(q->op ==  sgt){ // maior que
             if(q->arg1.type == String && q->arg2.type == String){
-                // sgt
+                //  ">"
                 insereInstR(SGT,pegaRegistrador(q->arg1.conteudo.nome),pegaRegistrador(q->arg2.conteudo.nome),pegaRegistrador(q->out.conteudo.nome));
             }else if(q->arg1.type == Const && q->arg2.type == String){
                 sprintf(temp,"%d",q->arg1.conteudo.val);
@@ -495,7 +569,7 @@ int pegaPosMemoria(char* nomeVar,char* nomeEscopo)
 
         if(q->op ==  slet){ // menor ou igual
             if(q->arg1.type == String && q->arg2.type == String){
-                // slet
+                // slet <=
                 insereInstR(SLET,pegaRegistrador(q->arg1.conteudo.nome),pegaRegistrador(q->arg2.conteudo.nome),pegaRegistrador(q->out.conteudo.nome));
             }else if(q->arg1.type == Const && q->arg2.type == String){
                 sprintf(temp,"%d",q->arg1.conteudo.val);
@@ -510,7 +584,7 @@ int pegaPosMemoria(char* nomeVar,char* nomeEscopo)
 
         if(q->op ==  sdt){ //diferente
             if(q->arg1.type == String && q->arg2.type == String){
-                // sdt
+                // sdt >=
                 insereInstR(SDT,pegaRegistrador(q->arg1.conteudo.nome),pegaRegistrador(q->arg2.conteudo.nome),pegaRegistrador(q->out.conteudo.nome));
             }else if(q->arg1.type == Const && q->arg2.type == String){
                 sprintf(temp,"%d",q->arg1.conteudo.val);
@@ -522,7 +596,28 @@ int pegaPosMemoria(char* nomeVar,char* nomeEscopo)
             
             }
         }
-
+        */
+        if(q->op == set) 
+        {
+            if(q->arg1.type == String && q->arg2.type == String)
+            {
+                // rt = rd == rs
+                insereInstR(SET,pegaRegistrador(q->arg1.conteudo.nome),pegaRegistrador(q->arg2.conteudo.nome),pegaRegistrador(q->out.conteudo.nome));
+            }
+            // se for um imediato, carrega no aux e faz a operação
+            else if(q->arg1.type == Const && q->arg2.type == String)
+            {
+                sprintf(temp,"%d",q->arg1.conteudo.val);
+                insereInstI(ADDI,$zero,$aux,temp);
+                insereInstR(SET,pegaRegistrador(q->arg2.conteudo.nome),$aux,pegaRegistrador(q->out.conteudo.nome));
+            }else if(q->arg1.type == String && q->arg2.type == Const)
+            {
+                sprintf(temp,"%d",q->arg2.conteudo.val);
+                insereInstI(ADDI,$zero,$aux,temp);
+                insereInstR(SET,pegaRegistrador(q->arg1.conteudo.nome),$aux,pegaRegistrador(q->out.conteudo.nome));
+            }
+        }
+        /*
         if(q->op ==  set){ //igual
             if(q->arg1.type == String && q->arg2.type == String){
                 // set
@@ -553,7 +648,8 @@ int pegaPosMemoria(char* nomeVar,char* nomeEscopo)
             
             }
         }
-
+        */
+       /*
         if(q->op ==  sget){     //maior igual
             if(q->arg1.type == String && q->arg2.type == String){
                 // sget
@@ -568,18 +664,32 @@ int pegaPosMemoria(char* nomeVar,char* nomeEscopo)
             
             }
         }
-
+        */
 
         if(q->op ==  fun){
             criaLabel(q->arg1.conteudo.nome);
-            if(strcmp("main",q->arg1.conteudo.nome) != 0){
-                printf("fun %s\n",q->arg1.conteudo.nome);
-                insereInstI(SUBI,$sp,$sp,"8");  // aumenta a pilha, note que a pilha cresce para baixo
-                insereInstI(SW,$sp,$ra,"4");    // armazena o endereço de retorno na pilha na memoria para não perder
-                insereInstI(SW,$sp,$fp,"0");    //guarda o antigo $fp
-                insereInstI(ADDI,$sp,$fp,"0");  //atualiza o $fp
-                sp = sp - 8;
-            
+            printf("fun %s\n",q->arg1.conteudo.nome); 
+            if(strcmp("main",q->arg1.conteudo.nome) != 0){ 
+                insereInstI(SW,$sp,$ra,"0"); 
+                insereInstI(ADDI,$sp,$sp,"1");
+                insereVar("$ra",q->arg1.conteudo.nome,sp,1);    
+                // armazena o endereço de retorno na pilha na memoria para não perder e att o sp
+
+                insereInstI(SW,$sp,$fp,"0"); // armazena o $fp na pilha
+                insereInstI(ADDI,$sp,$sp,"1"); // incrementa o sp
+                insereVar("$fp",q->arg1.conteudo.nome,sp,1);
+                
+                /*
+                printf("spp %d\n",sp);
+                sprintf(temp,"%d",sp -2); // calculo do novo $fp, guardando o antigo $fp
+                insereInstI(ADDI,$zero,$fp,temp);  //atualiza o $fp para o novo escopo
+                */
+                insereInstI(SUBI,$sp,$fp,"2"); //calculo do novo $fp, guardando o antigo $fp
+                if(q->prox->op == allocaMemVar || q->prox->op == allocaMemVet)
+                {
+                    //alocacao de parametros sempre ocorre apos o fun
+                    flagAlocacaoParam = 1; // flag para indicar que tem alocação de variaveis
+                }
             }
         }
 
@@ -589,11 +699,10 @@ int pegaPosMemoria(char* nomeVar,char* nomeEscopo)
                 escopos * guardaNo = procuraEscopo(q->arg1.conteudo.nome); 
                 sprintf(temp,"%d",guardaNo->mem);
                 insereInstI(SUBI,$sp,$sp,temp); // reseta o $sp
-                insereInstI(LW,$ra,$sp,"4");    // carrega o endereço de retorno que estava salvo na memoria, indicado por $fp
-                insereInstI(LW,$fp,$sp,"0");    // apos a execução da função o $fp volta para a sua origem
-                insereInstI(SUBI,$sp,$sp,"8");  // libera o espaço na pilha 
+                sp = sp - guardaNo->mem;
+                insereInstI(LW,$fp,$ra,"0");    // carrega o endereço de retorno que estava salvo na memoria, indicado por $fp
+                insereInstI(LW,$fp,$fp,"1");    // apos a execução da função o $fp volta para a sua origem 
                 insereInstR(JR,$ra,$zero,$zero);  // incrementa o ponteiro da pilha
-                sp = sp - guardaNo->mem - 8;
             }
 
         }
@@ -610,36 +719,58 @@ int pegaPosMemoria(char* nomeVar,char* nomeEscopo)
             */
             // se for global -> começa em baixo, se for local começa no topo
             if(!strcmp(q->arg1.conteudo.nome,"global")){
-                insereVar(q->arg2.conteudo.nome,q->arg1.conteudo.nome,0,4);
-            }else{                
-                insereInstI(SUBI,$sp,$sp,"4");
-                sp = sp - 4;
-                insereInstI(SW,$zero,$sp,"0"); // deixa a posição de memoria guardada e atribui o valor 0 para elas
-                insereVar(q->arg2.conteudo.nome,q->arg1.conteudo.nome,sp,4);
+                sprintf(temp,"%d",63-memLocG);
+                insereInstI(SW,$zero,$zero,temp);
+                insereVar(q->arg2.conteudo.nome,q->arg1.conteudo.nome,63-memLocG,1);
+                printf("spb %d\n",sp);
+            }else{
+                if(flagAlocacaoParam == 1)
+                {
+                    insereInstI(ADDI,$sp,$sp,"1"); // incrementa o sp para alocar a variavel
+                    insereVar(q->arg2.conteudo.nome,q->arg1.conteudo.nome,sp,1);
+                    if(q->prox->op == allocaMemVet || q->prox->op == allocaMemVar)
+                    {
+                        // se for alocação de variaveis, incrementa o sp
+                        flagAlocacaoParam = 1; // reseta a flag
+                    }else{
+                        flagAlocacaoParam = 0; // reseta a flag
+                    }
+                }else{                
+                insereInstI(SW,$sp,$zero,"0"); // deixa a posição de memoria guardada e atribui o valor 0 para elas
+                insereVar(q->arg2.conteudo.nome,q->arg1.conteudo.nome,sp,1);
+                insereInstI(ADDI,$sp,$sp,"1");
+                }
+                printf("numlinha %d\n",numLinhas);
             }
+            
         }
 
         if(q->op == allocaMemVet){
             if(strcmp(q->arg1.conteudo.nome,"global")==0){
                 if(q->out.conteudo.val > 0)
                 {
-                    insereVar(q->arg2.conteudo.nome,q->arg1.conteudo.nome,0,q->out.conteudo.val*4);
+                    insereVar(q->arg2.conteudo.nome,q->arg1.conteudo.nome,0,q->out.conteudo.val);
+                    sprintf(temp,"%d",63-memLocG); // pega a memoria global gasta - o topo
+                    insereInstI(SW,$zero,$zero,temp); // guarda o vetor na memoria global
                 }else
                 {
-                    insereVar(q->arg2.conteudo.nome,q->arg1.conteudo.nome,0,4);
+                    insereVar(q->arg2.conteudo.nome,q->arg1.conteudo.nome,0,1);
+                    sprintf(temp,"%d",63-memLocG); // pega a memoria global gasta - o topo
+                    insereInstI(SW,$zero,$zero,temp); // guarda o vetor na memoria global
                 }
                 
             }else{
                     if(q->out.conteudo.val > 0){
-                
-                        sprintf(temp,"%d",q->out.conteudo.val*4); // pega o numero de posições e multiplica por 4
-                        sp = sp - q->out.conteudo.val*4;
-                        insereInstI(SUBI,$sp,$sp,temp);
-                        insereVar(q->arg2.conteudo.nome,q->arg1.conteudo.nome,sp,q->out.conteudo.val*4);
+                    
+                        sprintf(temp,"%d",q->out.conteudo.val); // pega o numero de posições e multiplica por 4
+                        insereInstI(SW,$sp,$zero,0);
+                        insereInstI(ADDI,$sp,$sp,temp); // incrementa o sp para o tamanho do vetor
+                        insereVar(q->arg2.conteudo.nome,q->arg1.conteudo.nome,0,q->out.conteudo.val);
 
                     }else if(q->out.conteudo.val == 0){
-                        insereVar(q->arg2.conteudo.nome,q->arg1.conteudo.nome,sp,4); //vetor parametro
-                        sp = sp - 4;
+                        //allocacao de vetor como parametro
+                        insereVar(q->arg2.conteudo.nome,q->arg1.conteudo.nome,0,1); //vetor parametro
+                        insereInstI(ADDI,$sp,$sp,"1"); // declarando o vetor
                     }
             }
             
@@ -652,11 +783,11 @@ int pegaPosMemoria(char* nomeVar,char* nomeEscopo)
             if(q->arg1.type == String){
                 if(strcmp(q->out.conteudo.nome,"global")){
                     // store local
-                    sprintf(temp,"%d",sp-pegaPosMemoria(q->arg2.conteudo.nome,q->out.conteudo.nome));
+                    sprintf(temp,"%d",pegaPosMemoria(q->arg2.conteudo.nome,q->out.conteudo.nome));
                     insereInstI(SW,$fp,pegaRegistrador(q->arg1.conteudo.nome),temp);
                 }else{
                     // store global
-                    sprintf(temp,"%d",pegaPosMemoria(q->arg2.conteudo.nome,q->out.conteudo.nome));
+                    sprintf(temp,"%d",63-pegaPosMemoria(q->arg2.conteudo.nome,q->out.conteudo.nome));
                     insereInstI(SW,$zero,pegaRegistrador(q->arg1.conteudo.nome),temp);
 
                 }
@@ -666,11 +797,11 @@ int pegaPosMemoria(char* nomeVar,char* nomeEscopo)
                 insereInstI(ADDI,$zero,$aux,temp2);
                 if(strcmp(q->out.conteudo.nome,"global")){
                     // store local
-                    sprintf(temp,"%d",sp-pegaPosMemoria(q->arg2.conteudo.nome,q->out.conteudo.nome));
+                    sprintf(temp,"%d",pegaPosMemoria(q->arg2.conteudo.nome,q->out.conteudo.nome));
                     sprintf(temp2,"%d",q->arg1.conteudo.val);
                     insereInstI(SW,$fp,$aux,temp);
                 }else{
-                    sprintf(temp,"%d",pegaPosMemoria(q->arg2.conteudo.nome,q->out.conteudo.nome));
+                    sprintf(temp,"%d",63-pegaPosMemoria(q->arg2.conteudo.nome,q->out.conteudo.nome));
                     sprintf(temp2,"%d",q->arg1.conteudo.val);
                     insereInstI(SW,$zero,$aux,temp);
                 }     
@@ -694,11 +825,13 @@ int pegaPosMemoria(char* nomeVar,char* nomeEscopo)
                         
                 if(strcmp(q->arg1.conteudo.nome,"global")){
                     //load local
-                    sprintf(temp,"%d",sp-pegaPosMemoria(q->arg2.conteudo.nome,q->arg1.conteudo.nome));
+                    //pega a posicao em relacao ao fp
+                    printf("carregando var local %s %d\n",q->arg2.conteudo.nome, pegaPosMemoria(q->arg2.conteudo.nome,q->arg1.conteudo.nome));
+                    sprintf(temp,"%d",pegaPosMemoria(q->arg2.conteudo.nome,q->arg1.conteudo.nome));
                     insereInstI(LW,$fp,pegaRegistrador(q->out.conteudo.nome),temp);
                 }else{
-                    //load global
-                    sprintf(temp,"%d",pegaPosMemoria(q->arg2.conteudo.nome,q->arg1.conteudo.nome));
+                    //load global => como comeca no topo, entao temos 63(topo) - a pos em relacao ao topo
+                    sprintf(temp,"%d",63-pegaPosMemoria(q->arg2.conteudo.nome,q->arg1.conteudo.nome));
                     insereInstI(LW,$zero,pegaRegistrador(q->out.conteudo.nome),temp);
                 }
 
@@ -711,22 +844,27 @@ int pegaPosMemoria(char* nomeVar,char* nomeEscopo)
        }
 
        if(q->op == empilha){
+            //alteracoes => a funcao do empilha vai ser embutida no call
+        /*
             if(q->arg1.type == Const){
                 sprintf(temp,"$t%d",q->arg1.conteudo.val);
             }
-            sp = sp -4;
-            insereInstI(SUBI,$sp,$sp,"4");  // abre espaço na pilha e salva o valor do reg na pilha
-            insereInstI(SW,pegaRegistrador(temp),$sp,"0");
-       }
+            //param  joga na pilha e o empilha da um store no registrador do param
+            insereInstI(SW,$sp,pegaRegistrador(temp),"0");
+            insereInstI(ADDI,$sp,$sp,"1");  // abre espaço na pilha e salva o valor do reg na pilha
+            sp = sp + 1;
+        */
+        }
     
        if(q->op == desempilha){
+            /*
             if(q->arg1.type == Const){
                 sprintf(temp,"$t%d",q->arg1.conteudo.val);
             }
             sp = sp + 4;
             insereInstI(LW,pegaRegistrador(temp),$sp,"0");
             insereInstI(ADDI,$sp,$sp,"4");  // fecha espaço na pilha e carrega o valor do reg na pilha
-
+            */
        }
        
         /*
