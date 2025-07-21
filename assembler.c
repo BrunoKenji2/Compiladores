@@ -279,9 +279,9 @@ void insereVar(char * nomeVar, char* nomeEscopo, int posMemoria, int memSize){
                 aux = aux->prox;
             }
         aux->prox = criaVariavel(nomeVar,63-memLocG,memLocG);
-        memLocG = memLocG + memSize; // atualiza o valor da memoria global
-
         }
+    memLocG = memLocG + memSize; // atualiza o valor da memoria global
+
     }else if(strcmp(nomeEscopo,"main") == 0){
         if(aux == NULL){
             escopo->variaveis = criaVariavel(nomeVar,posMemoria,escopo->mem-1);
@@ -323,7 +323,7 @@ int pegaPosMemoria(char* nomeVar,char* nomeEscopo)
     char temp2[50];
     insereInstI(ADDI,$sp,$sp,"0");
     insereInstI(ADDI,$fp,$fp,"0");
-    /*while(flagAlocGlobal == 1)
+    while(flagAlocGlobal == 1)
     {
         if(q->op == allocaMemVar)
         {
@@ -339,14 +339,29 @@ int pegaPosMemoria(char* nomeVar,char* nomeEscopo)
             if(q->out.conteudo.val > 0)
                 {
                     flagAlocGlobal = 1;
+                    int indice;
+                    for(indice = 0; indice <= q->out.conteudo.val; indice++)
+                    {   
+                        //63-memLocG e a pos da memoria que vai ser alocada
+                        if(indice == 0)
+                        {
+                            sprintf(temp,"%d",63-memLocG - q->out.conteudo.val);
+                            insereInstI(ADDI,$zero,$aux,temp);  //salva o endereco no 0 e os proximos 10 sao os valores note que ele aloca o numero n de espacos, a variavel com o valor do endereco fica no fim e ela aponta para o comeco da lista
+                            sprintf(temp,"%d",63-memLocG);
+                            insereInstI(SW,$zero,$aux,temp);
+                        }else
+                        {
+                            sprintf(temp,"%d",63-memLocG-indice);
+                            insereInstI(SW,$zero,$zero,temp); // guarda o vetor na memoria global posicao por posicao, inicializando com 0
+                        }
+                    }
                     insereVar(q->arg2.conteudo.nome,q->arg1.conteudo.nome,0,q->out.conteudo.val);
-                    sprintf(temp,"%d",63-memLocG); // pega a memoria global gasta - o topo
-                    insereInstI(SW,$zero,$zero,temp); // guarda o vetor na memoria global
                 }else
                 {
-                    insereVar(q->arg2.conteudo.nome,q->arg1.conteudo.nome,0,1);
+                    flagAlocGlobal = 1;
                     sprintf(temp,"%d",63-memLocG); // pega a memoria global gasta - o topo
                     insereInstI(SW,$zero,$zero,temp); // guarda o vetor na memoria global
+                    insereVar(q->arg2.conteudo.nome,q->arg1.conteudo.nome,0,1);
                 }
             q = q->prox;        
         }
@@ -357,8 +372,8 @@ int pegaPosMemoria(char* nomeVar,char* nomeEscopo)
         }
         
     }
-        */
-       insereInstJ(JUMP,"main");
+        
+    
     printf("Memoria global alocada %d\n",memLocG);
     while(q != NULL){
         //Intruções R
@@ -732,7 +747,7 @@ int pegaPosMemoria(char* nomeVar,char* nomeEscopo)
                     insereVar(q->arg2.conteudo.nome,q->arg1.conteudo.nome,sp,1);
                     if(q->prox->op == allocaMemVet || q->prox->op == allocaMemVar)
                     {
-                        // se for alocação de variaveis, incrementa o sp
+                        // se for alocação de variaveis, incrementa o sp => unico problema é caso tenha alocacao de memoria logo apos a alocacao dos param -> mas como é mais para inicializar não há problema
                         flagAlocacaoParam = 1; // reseta a flag
                     }else{
                         flagAlocacaoParam = 0; // reseta a flag

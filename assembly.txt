@@ -1,7 +1,18 @@
 addi , r30 , r30 , 0 
 addi , r29 , r29 , 0 
-jump , 107 
-sw , r0 , r0 , 63 
+addi , r0 , r27 , 53 
+sw , r0 , r27 , 63 
+sw , r0 , r0 , 62 
+sw , r0 , r0 , 61 
+sw , r0 , r0 , 60 
+sw , r0 , r0 , 59 
+sw , r0 , r0 , 58 
+sw , r0 , r0 , 57 
+sw , r0 , r0 , 56 
+sw , r0 , r0 , 55 
+sw , r0 , r0 , 54 
+sw , r0 , r0 , 53 
+jump , 120 
 sw , r30 , r31 , 0 
 addi , r30 , r30 , 1 
 sw , r30 , r29 , 0 
@@ -44,9 +55,11 @@ sw , r29 , r1 , 7
 lw , r29 , r1 , 5 
 addi , r1 , r2 , 1 
 sw , r29 , r2 , 5 
-jump , 26 
+jump , 37 
 lw , r29 , r1 , 7 
-addi , r1 , r28 , 0 
+output , r1 
+lw , r29 , r2 , 7 
+addi , r2 , r28 , 0 
 subi , r30 , r30 , 8 
 lw , r29 , r31 , 0 
 lw , r29 , r29 , 1 
@@ -76,7 +89,7 @@ lw , r29 , r3 , 4
 sw , r30 , r1 , 2 
 sw , r30 , r2 , 3 
 sw , r30 , r3 , 4 
-jal , 5 
+jal , 16 
 sw , r29 , r28 , 6 
 lw , r29 , r1 , 2 
 lw , r29 , r4 , 6 
@@ -99,7 +112,7 @@ sw , r6 , r1 , 0
 lw , r29 , r1 , 5 
 addi , r1 , r4 , 1 
 sw , r29 , r4 , 5 
-jump , 66 
+jump , 79 
 subi , r30 , r30 , 8 
 lw , r29 , r31 , 0 
 lw , r29 , r29 , 1 
@@ -121,14 +134,14 @@ sw , r3 , r28 , 0
 lw , r29 , r1 , 0 
 addi , r1 , r2 , 1 
 sw , r29 , r2 , 0 
-jump , 111 
+jump , 124 
 lw , r0 , r1 , 63 
 sw , r30 , r1 , 2 
 addi , r0 , r27 , 0 
 sw , r30 , r27 , 3 
 addi , r0 , r27 , 10 
 sw , r30 , r27 , 4 
-jal , 54 
+jal , 67 
 addi , r0 , r27 , 0 
 sw , r29 , r27 , 0 
 lw , r29 , r2 , 0 
@@ -143,4 +156,4 @@ output , r2
 lw , r29 , r3 , 0 
 addi , r3 , r4 , 1 
 sw , r29 , r4 , 0 
-jump , 134 
+jump , 147 
