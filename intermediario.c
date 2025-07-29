@@ -519,7 +519,7 @@ void geraCodigo(TreeNode* raiz){
 
 void imprimeIntemediario()
 {
-	FILE *arq = fopen("intermediario.txt","w");
+	FILE *arq = fopen("saidas/intermediario.txt","w");
 	if(quadPrimeiro == NULL)
 		return;
 	Quad *q = quadPrimeiro;

@@ -15,7 +15,6 @@ int minloc ( int a[], int low, int high )
 		}
 		i = i + 1;
 	}
-	output(k);
 	return k;
 }
 

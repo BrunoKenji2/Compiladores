@@ -1,3 +1,1 @@
-Verificar o no else quando tem If else -> acho que já tem so que está como IFk e não está imprimindo-> verificar depois
-
-verificar se o SET funciona para o marcao
+Implementado o assembler e binario apenas para o sort e gcd

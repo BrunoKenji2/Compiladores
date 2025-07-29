@@ -140,7 +140,7 @@ void buildSymtab(TreeNode *syntaxTree)
 {
     traverse(syntaxTree);
     verifica_main();
-    semanticFile = fopen("tabelaSimbolos.txt","w");
+    semanticFile = fopen("saidas/tabelaSimbolos.txt","w");
     if(semanticFile!=NULL)
     {
         printSymTab(semanticFile);

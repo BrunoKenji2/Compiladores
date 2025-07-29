@@ -1,0 +1,12 @@
+# Diretório de Saídas do Compilador
+
+Este diretório contém os arquivos gerados pelo compilador C-.
+
+## Arquivos gerados automaticamente:
+- `arvore.txt` - Árvore sintática abstrata
+- `assembly.txt` - Código assembly MIPS-like  
+- `binario.txt` - Código binário
+- `intermediario.txt` - Código intermediário (quadruplas)
+- `tabelaSimbolos.txt` - Tabela de símbolos
+
+Os arquivos são recriados a cada execução do compilador.

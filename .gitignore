@@ -1,1 +1,23 @@
+# Arquivos objeto e compilação
 *.o
+
+# Executável principal
+cmenos
+
+# Arquivos gerados pelo Flex/Bison
+lex.yy.c
+parser.tab.c
+parser.tab.h
+
+# Arquivos temporários e backup
+*~
+*.swp
+*.tmp
+
+# Arquivos de sistema
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/

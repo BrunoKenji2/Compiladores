@@ -42,10 +42,7 @@ storeVar,$t1,i,minloc
 jump,L0,___,___
 label,L1,___,___
 loadVar,minloc,k,$t0
-param,$t0,___,___
-call,output,1,___
-loadVar,minloc,k,$t1
-move,$t1,$rf,___
+move,$t0,$rf,___
 endF,minloc,___,___
 fun,sort,___,___
 allocaMemVet,sort,a,0

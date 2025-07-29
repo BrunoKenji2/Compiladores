@@ -264,7 +264,7 @@ UNINDENT;
 
 void printTreeR( TreeNode * tree )
 {
-	listing = fopen("arvore.txt","w");
+	listing = fopen("saidas/arvore.txt","w");
 	if(listing!=NULL)
 	{
 		printTree(tree);

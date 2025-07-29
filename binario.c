@@ -46,7 +46,6 @@ char *  converteInst(NoInstrucao * ins){
         if(ins->inst == JUMP){
             strcpy(opcode,"011100");
             strcpy(endereco,decimalParaBinario(pegaLinhaLabel(ins->endereco)-1,26));
-            printf("linha label %s %d\n",ins->endereco,pegaLinhaLabel(ins->endereco));
             strcpy(binario,opcode);
             strcat(binario,endereco);
         }else if(ins->inst == JAL){
@@ -218,7 +217,7 @@ char *  converteInst(NoInstrucao * ins){
 
 void geraBinario(NoInstrucao * assembly)
 {
-    FILE * f = fopen("binario.txt","w");
+    FILE * f = fopen("saidas/binario.txt","w");
 
     while(assembly != NULL){
         
@@ -226,4 +225,5 @@ void geraBinario(NoInstrucao * assembly)
         fprintf(f,"%s\n",binario);
         assembly = assembly->prox;
     }
+    printf("Arquivo binario gerado...\n");
 }

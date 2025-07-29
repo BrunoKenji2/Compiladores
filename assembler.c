@@ -20,7 +20,6 @@ noLabel * primeiraLabel = NULL;
 noLabel * ultimaLabel = NULL;
 escopos * primeiroEscopo = NULL;
 escopos * ultimoEscopo = NULL;
-int sp = 0; // pilha começa no endereço 0x7FFFFFFF
 int memLocG = 0; // memória local global
 int teste;
 int numeroDeParametros = 0;
@@ -268,7 +267,6 @@ void insereVar(char * nomeVar, char* nomeEscopo, int posMemoria, int memSize){
         }
     }
     escopo->mem = escopo->mem + memSize; // aloca 1 para cada variavel
-    printf("Variavel %s alocada no escopo %s na posicao %d\n",nomeVar,nomeEscopo,escopo->mem);
     variavel * aux = escopo->variaveis;
     if(strcmp(nomeEscopo,"global") == 0){
         if(aux == NULL){
@@ -374,7 +372,6 @@ int pegaPosMemoria(char* nomeVar,char* nomeEscopo)
     }
         
     
-    printf("Memoria global alocada %d\n",memLocG);
     while(q != NULL){
         //Intruções R
         if(q->op == add){
@@ -685,22 +682,15 @@ int pegaPosMemoria(char* nomeVar,char* nomeEscopo)
 
         if(q->op ==  fun){
             criaLabel(q->arg1.conteudo.nome);
-            printf("fun %s\n",q->arg1.conteudo.nome); 
             if(strcmp("main",q->arg1.conteudo.nome) != 0){ 
                 insereInstI(SW,$sp,$ra,"0"); 
                 insereInstI(ADDI,$sp,$sp,"1");
-                insereVar("$ra",q->arg1.conteudo.nome,sp,1);    
+                insereVar("$ra",q->arg1.conteudo.nome,0,1);    
                 // armazena o endereço de retorno na pilha na memoria para não perder e att o sp
 
                 insereInstI(SW,$sp,$fp,"0"); // armazena o $fp na pilha
                 insereInstI(ADDI,$sp,$sp,"1"); // incrementa o sp
-                insereVar("$fp",q->arg1.conteudo.nome,sp,1);
-                
-                /*
-                printf("spp %d\n",sp);
-                sprintf(temp,"%d",sp -2); // calculo do novo $fp, guardando o antigo $fp
-                insereInstI(ADDI,$zero,$fp,temp);  //atualiza o $fp para o novo escopo
-                */
+                insereVar("$fp",q->arg1.conteudo.nome,0,1);
                 insereInstI(SUBI,$sp,$fp,"2"); //calculo do novo $fp, guardando o antigo $fp
                 if(q->prox->op == allocaMemVar || q->prox->op == allocaMemVet)
                 {
@@ -716,7 +706,6 @@ int pegaPosMemoria(char* nomeVar,char* nomeEscopo)
                 escopos * guardaNo = procuraEscopo(q->arg1.conteudo.nome); 
                 sprintf(temp,"%d",guardaNo->mem);
                 insereInstI(SUBI,$sp,$sp,temp); // reseta o $sp
-                sp = sp - guardaNo->mem;
                 insereInstI(LW,$fp,$ra,"0");    // carrega o endereço de retorno que estava salvo na memoria, indicado por $fp
                 insereInstI(LW,$fp,$fp,"1");    // apos a execução da função o $fp volta para a sua origem 
                 insereInstR(JR,$ra,$zero,$zero);  // incrementa o ponteiro da pilha
@@ -739,12 +728,11 @@ int pegaPosMemoria(char* nomeVar,char* nomeEscopo)
                 sprintf(temp,"%d",63-memLocG);
                 insereInstI(SW,$zero,$zero,temp);
                 insereVar(q->arg2.conteudo.nome,q->arg1.conteudo.nome,63-memLocG,1);
-                printf("spb %d\n",sp);
             }else{
                 if(flagAlocacaoParam == 1)
                 {
                     insereInstI(ADDI,$sp,$sp,"1"); // incrementa o sp para alocar a variavel
-                    insereVar(q->arg2.conteudo.nome,q->arg1.conteudo.nome,sp,1);
+                    insereVar(q->arg2.conteudo.nome,q->arg1.conteudo.nome,0,1);
                     if(q->prox->op == allocaMemVet || q->prox->op == allocaMemVar)
                     {
                         // se for alocação de variaveis, incrementa o sp => unico problema é caso tenha alocacao de memoria logo apos a alocacao dos param -> mas como é mais para inicializar não há problema
@@ -754,10 +742,9 @@ int pegaPosMemoria(char* nomeVar,char* nomeEscopo)
                     }
                 }else{                
                 insereInstI(SW,$sp,$zero,"0"); // deixa a posição de memoria guardada e atribui o valor 0 para elas
-                insereVar(q->arg2.conteudo.nome,q->arg1.conteudo.nome,sp,1);
+                insereVar(q->arg2.conteudo.nome,q->arg1.conteudo.nome,0,1);
                 insereInstI(ADDI,$sp,$sp,"1");
                 }
-                printf("numlinha %d\n",numLinhas);
             }
             
         }
@@ -843,7 +830,6 @@ int pegaPosMemoria(char* nomeVar,char* nomeEscopo)
                 if(strcmp(q->arg1.conteudo.nome,"global")){
                     //load local
                     //pega a posicao em relacao ao fp
-                    printf("carregando var local %s %d\n",q->arg2.conteudo.nome, pegaPosMemoria(q->arg2.conteudo.nome,q->arg1.conteudo.nome));
                     sprintf(temp,"%d",pegaPosMemoria(q->arg2.conteudo.nome,q->arg1.conteudo.nome));
                     insereInstI(LW,$fp,pegaRegistrador(q->out.conteudo.nome),temp);
                 }else{
@@ -908,14 +894,13 @@ int pegaPosMemoria(char* nomeVar,char* nomeEscopo)
 void imprimeLabel(){
     noLabel * temp = primeiraLabel;
     while(temp != NULL){
-        printf("%s linha %i\n",temp->nome,temp->linha);
         temp = temp->prox;
     }
 }
 
 void imprimeInstrucoes(){
 
-    FILE * f = fopen("assembly.txt","w"); 
+    FILE * f = fopen("saidas/assembly.txt","w"); 
     NoInstrucao * p = primeiraInstrucao;
     NoInstrucao * aux;
     noLabel * temp = primeiraLabel;
@@ -923,18 +908,6 @@ void imprimeInstrucoes(){
     int atraso = 0;
     while(p != NULL){
 
-        /*
-        if(temp != NULL){
-            if(temp->linha == count-atraso){
-                fprintf(f,"%s: \n",temp->nome);
-                temp->linha = count;
-                //printf("label %s linha %d cout %d\n",temp->nome,temp->linha,count);
-                temp = temp->prox;
-                count++;
-                atraso++;
-            }
-        }
-        */
         if(p->tipo == 0){
            
             fprintf(f,"%s , %i \n",ListaInstStr[p->inst],pegaLinhaLabel(p->endereco));
@@ -951,5 +924,6 @@ void imprimeInstrucoes(){
         p = p->prox;
         count++;
     }
+    printf("Assembly gerado com sucesso!\n");
 
 }
