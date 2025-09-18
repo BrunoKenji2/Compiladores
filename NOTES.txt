@@ -1,1 +1,13 @@
 Implementado o assembler e binario apenas para o sort e gcd
+
+sort 4 vetores -
+gcd - 
+quadrado -
+imprime21 -
+soma -
+sub - 
+volume -
+div -
+potencia 
+imprimeIN
+

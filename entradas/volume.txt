@@ -1,0 +1,9 @@
+void main(void){
+    int x;
+    int y;
+    int z;
+    x = input();
+    y = input();
+    z = input();
+    output(x*y*z);
+}

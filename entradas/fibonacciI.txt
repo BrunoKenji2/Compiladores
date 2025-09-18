@@ -1,0 +1,35 @@
+/* Programa para calcular o n-ésimo número de Fibonacci - versão iterativa */
+
+int fibonacci(int n)
+{
+    int a;
+    int b;
+    int temp;
+    int i;
+    
+    if (n < 2) return n;
+    
+    a = 0;
+    b = 1;
+    i = 2;
+    
+    while (i < n+1)
+    {
+        temp = a + b;
+        a = b;
+        b = temp;
+        i = i + 1;
+    }
+    
+    return b;
+}
+
+void main(void)
+{
+    int num;
+    int result;
+    
+    num = input();
+    result = fibonacci(num);
+    output(result);
+}

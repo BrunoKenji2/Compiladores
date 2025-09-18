@@ -1,0 +1,36 @@
+/* Programa para buscar um elemento em um array */
+
+int arr[5];
+
+int busca(int elemento, int tamanho)
+{
+    int i;
+    i = 0;
+    while (i < tamanho) {
+        if (arr[i] == elemento)
+            return i;
+        i = i + 1;
+    }
+    return -1;
+}
+
+void main(void)
+{
+    int i;
+    int elemento;
+    int posicao;
+    
+    /* Lê 5 números para o array */
+    i = 0;
+    while (i < 5) {
+        arr[i] = input();
+        i = i + 1;
+    }
+    
+    /* Lê o elemento a ser buscado */
+    elemento = input();
+    
+    /* Busca o elemento */
+    posicao = busca(elemento, 5);
+    output(posicao);
+}

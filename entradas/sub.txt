@@ -1,0 +1,6 @@
+void main(void){
+    int x; int y;
+    x = 50;
+    y = input();
+    output(x - y);
+}

@@ -1,0 +1,35 @@
+/* Programa para encontrar o maior elemento em um array */
+
+int numeros[8];
+
+int encontrarMaior(int tamanho)
+{
+    int maior;
+    int i;
+    
+    maior = numeros[0];
+    i = 1;
+    while (i < tamanho) {
+        if (numeros[i] > maior)
+            maior = numeros[i];
+        i = i + 1;
+    }
+    return maior;
+}
+
+void main(void)
+{
+    int i;
+    int maior;
+    
+    /* Lê 8 números */
+    i = 0;
+    while (i < 8) {
+        numeros[i] = input();
+        i = i + 1;
+    }
+    
+    /* Encontra o maior */
+    maior = encontrarMaior(8);
+    output(maior);
+}

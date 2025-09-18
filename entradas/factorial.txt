@@ -1,0 +1,17 @@
+/* Programa para calcular o fatorial de um número */
+
+int factorial(int n)
+{
+    if (n < 2) return 1;
+    else return n * factorial(n - 1);
+}
+
+void main(void)
+{
+    int number;
+    int result;
+    
+    number = input();
+    result = factorial(number);
+    output(result);
+}

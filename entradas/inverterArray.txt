@@ -1,0 +1,39 @@
+/* Programa para inverter os elementos de um array */
+
+int array[6];
+
+void inverterArray(int tamanho)
+{
+    int i;
+    int temp;
+    
+    i = 0;
+    while (i < tamanho / 2) {
+        temp = array[i];
+        array[i] = array[tamanho - 1 - i];
+        array[tamanho - 1 - i] = temp;
+        i = i + 1;
+    }
+}
+
+void main(void)
+{
+    int i;
+    
+    /* Lê 6 números */
+    i = 0;
+    while (i < 6) {
+        array[i] = input();
+        i = i + 1;
+    }
+    
+    /* Inverte o array */
+    inverterArray(6);
+    
+    /* Imprime o array invertido */
+    i = 0;
+    while (i < 6) {
+        output(array[i]);
+        i = i + 1;
+    }
+}

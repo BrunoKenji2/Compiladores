@@ -1,0 +1,26 @@
+/* Programa para calcular o n-ésimo número de Fibonacci - versão recursiva sem soma direta */
+
+int fibonacci(int n)
+{
+    int x;
+    int y;
+    int soma;
+    output(n);
+    if (n < 2) return n;
+    
+    x = fibonacci(n-1);
+    y = fibonacci(n-2);
+    soma = x + y;
+    
+    return soma;
+}
+
+void main(void)
+{
+    int num;
+    int result;
+    
+    num = input();
+    result = fibonacci(num);
+    output(result);
+}

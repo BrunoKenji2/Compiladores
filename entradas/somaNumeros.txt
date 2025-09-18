@@ -1,0 +1,25 @@
+/* Programa para calcular a soma dos números de 1 até N */
+
+int somaAteN(int n)
+{
+    int soma;
+    int i;
+    
+    soma = 0;
+    i = 1;
+    while (i < n+1) {
+        soma = soma + i;
+        i = i + 1;
+    }
+    return soma;
+}
+
+void main(void)
+{
+    int numero;
+    int resultado;
+    
+    numero = input();
+    resultado = somaAteN(numero);
+    output(resultado);
+}

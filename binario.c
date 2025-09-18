@@ -139,7 +139,7 @@ char *  converteInst(NoInstrucao * ins){
         }else if(ins->inst == MULTI){
             strcpy(opcode,"000101");
         }else if(ins->inst == DIVI){
-            strcpy(opcode,"000111");
+            strcpy(opcode,"100100");
         }else if(ins->inst == ANDI){
             strcpy(opcode,"001010");
         }else if(ins->inst == ORI){
