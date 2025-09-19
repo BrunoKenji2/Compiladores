@@ -1,29 +1,6 @@
 addi , r30 , r30 , 0 
 addi , r29 , r29 , 0 
-jump , 27 
-sw , r30 , r31 , 0 
-addi , r30 , r30 , 1 
-sw , r30 , r29 , 0 
-addi , r30 , r30 , 1 
-subi , r30 , r29 , 2 
-addi , r30 , r30 , 1 
-lw , r29 , r1 , 2 
-addi , r0 , r27 , 2 
-slt , r1 , r27 , r2 
-beq , r2 , r0 , L0 
-addi , r0 , r28 , 1 
-jump , 23 
-lw , r29 , r1 , 2 
-lw , r29 , r2 , 2 
-subi , r2 , r3 , 1 
-sw , r30 , r3 , 2 
-jal , 4 
-mult , r1 , r28 , r2 
-addi , r2 , r28 , 0 
-subi , r30 , r30 , 3 
-lw , r29 , r31 , 0 
-lw , r29 , r29 , 1 
-jr , r31 , r0 , r0 
+jump , 4 
 sw , r30 , r0 , 0 
 addi , r30 , r30 , 1 
 sw , r30 , r0 , 0 
@@ -31,9 +8,21 @@ addi , r30 , r30 , 1
 input , r28 
 output , r28 
 sw , r29 , r28 , 0 
-lw , r29 , r1 , 0 
-sw , r30 , r1 , 2 
-jal , 4 
+input , r28 
+output , r28 
 sw , r29 , r28 , 1 
-lw , r29 , r1 , 1 
-output , r1 
+lw , r29 , r1 , 0 
+sleti , r1 , r2 , 3 
+output , r2 
+lw , r29 , r1 , 0 
+lw , r29 , r3 , 1 
+slet , r1 , r3 , r4 
+output , r4 
+lw , r29 , r1 , 0 
+sleti , r1 , r3 , 3 
+beq , r3 , r0 , L0 
+addi , r0 , r27 , 10 
+output , r27 
+jump , 29 
+addi , r0 , r27 , 4 
+output , r27 

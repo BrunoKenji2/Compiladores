@@ -82,7 +82,7 @@ char *  converteInst(NoInstrucao * ins){
                 strcpy(opcode,"");
                 break;
             case SLET:
-                strcpy(opcode,"001001");
+                strcpy(opcode,"011000");
                 break;
             case SGET: 
                 strcpy(opcode,"001010");
@@ -149,7 +149,7 @@ char *  converteInst(NoInstrucao * ins){
         }else if(ins->inst == SGTI){
             strcpy(opcode,"");
         }else if(ins->inst == SLETI){
-            strcpy(opcode,"001001");
+            strcpy(opcode,"100101");
         }else if(ins->inst == SGETI){
             strcpy(opcode,"001010");
         }else if(ins->inst == SETI){

@@ -1,5 +1,13 @@
 void main(void){
     int x;
+    int y;
     x = input();
-    output(x/4);
+    y = input();
+    output(x <= 3);
+    output(x <= y);
+    if(x <= 3){
+        output(10);
+    }else{
+        output(4);
+    }
 }

@@ -1,9 +1,17 @@
 /* Programa para calcular o fatorial de um número */
 
 int factorial(int n)
-{
-    if (n < 2) return 1;
-    else return n * factorial(n - 1);
+{   
+    int resultF;
+    output(n);
+    if (n <= 2){
+        return 1;
+    } 
+    else {
+      resultF = factorial(n - 1);
+      output(resultF);
+      return (n * resultF);  
+    } 
 }
 
 void main(void)

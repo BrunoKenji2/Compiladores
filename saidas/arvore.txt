@@ -1,32 +1,28 @@
-  Tipo: int
-    Funcão - int - factorial - Linha: 3 Escopo: global
-      Tipo: int
-        Var n Linha: 3 Escopo: factorial
-      If
-        Op: <
-          VarID: n Line: 5 Escopo: factorial
-          Const: 2
-        Return
-          Const: 1
-        Return
-          Op: *
-            VarID: n Line: 6 Escopo: factorial
-            Call: factorial Linha: 6
-              Op: -
-                VarID: n Line: 6 Escopo: factorial
-                Const: 1
   Tipo: void
-    Funcão - void - main - Linha: 9 Escopo: global
+    Funcão - void - main - Linha: 1 Escopo: global
       Tipo: int
-        Var number Linha: 11 Escopo: main
+        Var x Linha: 2 Escopo: main
       Tipo: int
-        Var result Linha: 12 Escopo: main
+        Var y Linha: 3 Escopo: main
       Assign
-        VarID: number Line: 14 Escopo: main
-        Call: input Linha: 14
+        VarID: x Line: 4 Escopo: main
+        Call: input Linha: 4
       Assign
-        VarID: result Line: 15 Escopo: main
-        Call: factorial Linha: 15
-          VarID: number Line: 15 Escopo: main
-      Call: output Linha: 16
-        VarID: result Line: 16 Escopo: main
+        VarID: y Line: 5 Escopo: main
+        Call: input Linha: 5
+      Call: output Linha: 6
+        Op: <=
+          VarID: x Line: 6 Escopo: main
+          Const: 3
+      Call: output Linha: 7
+        Op: <=
+          VarID: x Line: 7 Escopo: main
+          VarID: y Line: 7 Escopo: main
+      If
+        Op: <=
+          VarID: x Line: 8 Escopo: main
+          Const: 3
+        Call: output Linha: 9
+          Const: 10
+        Call: output Linha: 11
+          Const: 4

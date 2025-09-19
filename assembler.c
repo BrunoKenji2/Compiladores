@@ -580,7 +580,8 @@ int pegaPosMemoria(char* nomeVar,char* nomeEscopo)
             
             }
         }
-
+        */
+        
         if(q->op ==  slet){ // menor ou igual
             if(q->arg1.type == String && q->arg2.type == String){
                 // slet <=
@@ -592,10 +593,10 @@ int pegaPosMemoria(char* nomeVar,char* nomeEscopo)
                 sprintf(temp,"%d",q->arg2.conteudo.val);
                 insereInstI(SLETI,pegaRegistrador(q->arg1.conteudo.nome),pegaRegistrador(q->out.conteudo.nome),temp);
             }else{
-            
+                // não tem slet com dois imediatos
             }
         }
-
+        /*
         if(q->op ==  sdt){ //diferente
             if(q->arg1.type == String && q->arg2.type == String){
                 // sdt >=
