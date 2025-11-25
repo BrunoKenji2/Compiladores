@@ -210,6 +210,15 @@ char *  converteInst(NoInstrucao * ins){
             
         }
         
+    }else if(ins->tipo == 4){
+        // inst LCD
+        if(ins->inst == SETLCD){
+            printf("SETLCD instruction detected\n");
+            strcpy(opcode,"100110");
+            strcpy(imediato,decimalParaBinario(atoi(ins->imediato),26));
+            strcpy(binario,opcode);
+            strcat(binario,imediato);
+        }
     }
     
     return binario;

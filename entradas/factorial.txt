@@ -3,12 +3,14 @@
 int factorial(int n)
 {   
     int resultF;
-    output(n);
-    if (n <= 2){
+    int aux;
+    if (n <= 1){
+        output(n);
         return 1;
     } 
     else {
-      resultF = factorial(n - 1);
+      aux = n-1;
+      resultF = factorial(aux);
       output(resultF);
       return (n * resultF);  
     } 

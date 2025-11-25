@@ -5,8 +5,9 @@ int fibonacci(int n)
     int x;
     int y;
     int soma;
-    output(n);
-    if (n < 2) return n;
+    if (n < 2){
+        return n;
+    }
     
     x = fibonacci(n-1);
     y = fibonacci(n-2);

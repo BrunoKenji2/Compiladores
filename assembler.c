@@ -25,9 +25,9 @@ int teste;
 int numeroDeParametros = 0;
 int flagAlocGlobal = 1; // flag para saber se eu estou alocando variaveis globais ou nao
 int flagAlocacaoParam = 0; // flag para saber se eu estou alocando parametros ou nao
-char * ListaInstStr[43] = {"add","addi","sub","subi","mult","multi","div","divi","and","andi","or","ori",
+char * ListaInstStr[44] = {"add","addi","sub","subi","mult","multi","div","divi","and","andi","or","ori",
 "slt","sgt","slet","sget","set","sdt","sgti","sleti","sgeti","seti","sdti","sll","srl","slti",
-"mod","jr","modi","bltz","bgtz","beqz","beq","bne","lw","sw","jump","jal","halt","nop","input","output","lui"};
+"mod","jr","modi","bltz","bgtz","beqz","beq","bne","lw","sw","jump","jal","halt","nop","input","output","lui","setLcd"};
 
 char * ListaRegStr[32] = {"r0","r1","r2","r3","r4","r5","r6","r7","r8","r9","r10","r11","r12","r13","r14","r15","r16","r17","r18","r19","r20","r21","r22","r23","r24","r25","r26","r27","r28","r29","r30","r31"};
 void insereInstJ(instrucao inst, char * label){
@@ -115,6 +115,19 @@ void insereInstIO(instrucao inst,registradores reg){
         ultimaInstrucao = novo;
     }
 
+    numLinhas++;
+}
+
+void insereInstLcd(instrucao inst, char * param){
+    //primeira instrução sempre é um addi para os sp e fp
+    NoInstrucao * novo = (NoInstrucao*)malloc(sizeof(NoInstrucao));
+    novo->inst = inst;
+    novo->imediato = (char *)malloc(sizeof(char)*(strlen(param)+1));
+    strcpy(novo->imediato,param);
+    novo->prox = NULL;
+    novo->tipo = 4;
+    ultimaInstrucao->prox = novo;
+    ultimaInstrucao = novo;
     numLinhas++;
 }
 
@@ -319,6 +332,7 @@ int pegaPosMemoria(char* nomeVar,char* nomeEscopo)
  NoInstrucao * geraAssembly(Quad* q){
     char temp[50];
     char temp2[50];
+    char * paramLcd;
     insereInstI(ADDI,$sp,$sp,"0");
     insereInstI(ADDI,$fp,$fp,"0");
     while(flagAlocGlobal == 1)
@@ -473,13 +487,17 @@ int pegaPosMemoria(char* nomeVar,char* nomeEscopo)
                     // desempilha o registrador e joga no output -- tipo = 1 => output é um registrador
                     insereInstIO(OUTPUT,pegaRegistrador(desempilhar(pilhaParam)));
                 }
+            }else if(!strcmp(q->arg1.conteudo.nome,"setLcd")){
+                paramLcd = (char*)malloc(strlen(pilhaParam->topo->parametro)*sizeof(char));
+                strcpy(paramLcd,desempilhar(pilhaParam));
+                insereInstLcd(SETLCD,paramLcd);
             }else{
                 //chamada de função => salva o numero de parametros para desempilhar ao allocar os parametros na funcao
-                numeroDeParametros = q->arg2.conteudo.val; // salva o numero de parametros para localizar o offset dos parametros
+                
                  for(i = 0; i < numParam; i++){
                      tiposParam[i] = pilhaParam->topo->tipo; // guarda o tipo do parametro
                      paramList[i] = (char*)malloc(strlen(pilhaParam->topo->parametro)*sizeof(char));
-                     strcpy(paramList[i],desempilhar(pilhaParam)); // desempilha os parametros
+                     strcpy(paramList[i],desempilhar(pilhaParam)); // desempilha os parametros 
                  }
                  int contAux = 0;
                  for(i = numParam; i > 0; i--)
@@ -921,6 +939,8 @@ void imprimeInstrucoes(){
             fprintf(f,"%s , %s , %s , %s \n",ListaInstStr[p->inst],ListaRegStr[p->reg1],ListaRegStr[p->reg2],p->imediato);
         }else if(p->tipo == 3){
             fprintf(f,"%s , %s \n",ListaInstStr[p->inst],ListaRegStr[p->reg1]);
+        }else if(p->tipo == 4){
+            fprintf(f,"%s , %s \n",ListaInstStr[p->inst],p->imediato);
         }
         p = p->prox;
         count++;

@@ -48,7 +48,8 @@ typedef enum {
     NOP,
     INPUT,
     OUTPUT,
-    LUI
+    LUI,
+    SETLCD
 }instrucao;
 
 typedef enum {

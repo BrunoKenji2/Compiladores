@@ -54,10 +54,11 @@ static void insertNode(TreeNode * t)
             else
                 printf("ERRO SEMÂNTICO: Redeclaração da função '%s' linha: %d\n",t->attr.nome,t->lineno);
             break;
-        case CallK: //erro 5
-            if (!lookup(t->attr.nome,"global") && strcmp(t->attr.nome,"input") != 0 && strcmp(t->attr.nome,"output") != 0)//chamada de funcao não encontrada
+        case CallK: //erro 5]
+            // busca nome da função na tabela de simbolos
+            if (!lookup(t->attr.nome,"global") && strcmp(t->attr.nome,"input") != 0 && strcmp(t->attr.nome,"output") != 0 && strcmp(t->attr.nome,"setLcd") != 0)//chamada de funcao não encontrada
                 printf("ERRO SEMÂNTICO: Chamada da função '%s' não declarada linha: %d\n",t->attr.nome,t->lineno);
-            else if (strcmp(t->attr.nome,"input") != 0 && strcmp(t->attr.nome,"output") != 0)
+            else if (strcmp(t->attr.nome,"input") != 0 && strcmp(t->attr.nome,"output") != 0 && strcmp(t->attr.nome,"setLcd") != 0)
                 insertTab(t->attr.nome, "global", 0, 0, t->lineno);
             break;
         case AssignK:

@@ -1,13 +1,26 @@
-void main(void){
-    int x;
-    int y;
-    x = input();
-    y = input();
-    output(x <= 3);
-    output(x <= y);
-    if(x <= 3){
-        output(10);
-    }else{
-        output(4);
-    }
+/* Programa para calcular o fatorial de um número */
+
+int factorial(int n)
+{   
+    int aux;
+    aux = 10;
+    output(n <= aux);
+    output(n <= 10);
+    output(n < 20);
+    output(n == 4);
+    if (n <= 5){
+        return 2;
+    }else {
+        return 10;  
+    } 
+}
+
+void main(void)
+{
+    int number;
+    int result;
+    
+    number = input();
+    result = factorial(number);
+    output(result);
 }

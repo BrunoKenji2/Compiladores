@@ -3,26 +3,7 @@ addi , r29 , r29 , 0
 jump , 4 
 sw , r30 , r0 , 0 
 addi , r30 , r30 , 1 
-sw , r30 , r0 , 0 
-addi , r30 , r30 , 1 
+setLcd , 10 
 input , r28 
 output , r28 
 sw , r29 , r28 , 0 
-input , r28 
-output , r28 
-sw , r29 , r28 , 1 
-lw , r29 , r1 , 0 
-sleti , r1 , r2 , 3 
-output , r2 
-lw , r29 , r1 , 0 
-lw , r29 , r3 , 1 
-slet , r1 , r3 , r4 
-output , r4 
-lw , r29 , r1 , 0 
-sleti , r1 , r3 , 3 
-beq , r3 , r0 , L0 
-addi , r0 , r27 , 10 
-output , r27 
-jump , 29 
-addi , r0 , r27 , 4 
-output , r27 

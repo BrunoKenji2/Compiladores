@@ -1,0 +1,9 @@
+void main(void){
+
+    int comPreempcao;
+    setLcd(10);
+    comPreempcao = input();
+    
+}
+
+

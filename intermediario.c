@@ -271,6 +271,16 @@ char *cria_label(){
                 insereQuad(fun,a1,a2,a2);
                 geraCodigo(t->filho[0]);    // parametros
                 geraCodigo(t->filho[1]);    // corpo da função
+                
+                // NOVO: Criar label para o final da função antes do endF
+                arg labelFim;
+                labelFim.type = String;
+                labelFim.conteudo.nome = (char*)malloc(20*sizeof(char));
+                sprintf(labelFim.conteudo.nome, "END_%s", t->attr.nome);
+                arg vazio;
+                vazio.type = Vazio;
+                insereQuad(label, labelFim, vazio, vazio);
+                
                 insereQuad(endF,a1,a2,a2);
                 liberaRegEndFun();  // libera os registradores usados na função
             break;
@@ -346,6 +356,14 @@ char *cria_label(){
                     destino.type = Vazio;
                     insereQuad(move,a1,a2,destino); // move o retorno para o endereço de retorno RF
                 }
+                
+                // NOVO: Gerar jump para o final da função após return
+                a1.type = String;
+                a1.conteudo.nome = (char*)malloc(20*sizeof(char));
+                sprintf(a1.conteudo.nome, "END_%s", t->escopo); // cria label para final da função
+                a2.type = Vazio;
+                destino.type = Vazio;
+                insereQuad(jump, a1, a2, destino); // jump para o final da função
             break;
             case CallK:
                 int nParam = 0;

@@ -1,5 +1,4 @@
                     Nome                   Var/func  Tipo         Escopo                       Número de linhas
 -----------------------------------------  --------  ----  --------------------  ------------------------------------------------
 main                                       funcao    void  global                1, 
-y                                          variável  int   main                  3, 5, 7, 
-x                                          variável  int   main                  2, 4, 6, 7, 8, 
+comPreempcao                               variável  int   main                  3, 5, 

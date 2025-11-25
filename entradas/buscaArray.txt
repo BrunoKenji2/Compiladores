@@ -11,7 +11,7 @@ int busca(int elemento, int tamanho)
             return i;
         i = i + 1;
     }
-    return -1;
+    return 99;
 }
 
 void main(void)

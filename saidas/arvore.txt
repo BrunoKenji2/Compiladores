@@ -1,28 +1,9 @@
   Tipo: void
     Funcão - void - main - Linha: 1 Escopo: global
       Tipo: int
-        Var x Linha: 2 Escopo: main
-      Tipo: int
-        Var y Linha: 3 Escopo: main
+        Var comPreempcao Linha: 3 Escopo: main
+      Call: setLcd Linha: 4
+        Const: 10
       Assign
-        VarID: x Line: 4 Escopo: main
-        Call: input Linha: 4
-      Assign
-        VarID: y Line: 5 Escopo: main
+        VarID: comPreempcao Line: 5 Escopo: main
         Call: input Linha: 5
-      Call: output Linha: 6
-        Op: <=
-          VarID: x Line: 6 Escopo: main
-          Const: 3
-      Call: output Linha: 7
-        Op: <=
-          VarID: x Line: 7 Escopo: main
-          VarID: y Line: 7 Escopo: main
-      If
-        Op: <=
-          VarID: x Line: 8 Escopo: main
-          Const: 3
-        Call: output Linha: 9
-          Const: 10
-        Call: output Linha: 11
-          Const: 4

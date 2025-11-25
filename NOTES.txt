@@ -1,13 +1,19 @@
-Implementado o assembler e binario apenas para o sort e gcd
+Implementado o assembler e binario apenas para o 
 
-sort 4 vetores -
-gcd - 
-quadrado -
-imprime21 -
-soma -
-sub - 
-volume -
-div -
-potencia 
-imprimeIN
+sort
+gcd
+areaTriangulo
+volume
+fibonacciI
+factorial
+primo
+inverteArray
+buscaArray
+input
 
+
+
+
+
+Recursividade falta implementar salvar o contexto.
+return deveriam sair direto da função, estão apenas atribuindo o valor ao r28
