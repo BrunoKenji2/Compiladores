@@ -728,6 +728,11 @@ int pegaPosMemoria(char* nomeVar,char* nomeEscopo)
                 insereInstI(LW,$fp,$ra,"0");    // carrega o endereço de retorno que estava salvo na memoria, indicado por $fp
                 insereInstI(LW,$fp,$fp,"1");    // apos a execução da função o $fp volta para a sua origem 
                 insereInstR(JR,$ra,$zero,$zero);  // incrementa o ponteiro da pilha
+            }else{
+                /*
+                    Fim do main: add halt
+                */
+                insereInstR(HALT,$zero,$zero,$zero);
             }
 
         }

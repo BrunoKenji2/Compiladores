@@ -105,6 +105,11 @@ char *  converteInst(NoInstrucao * ins){
             case JR:
                 strcpy(opcode,"001100");
                 break;
+            case HALT:
+                // Controle.v:636. Os campos de registrador sao ignorados pelo
+                // hardware (o bloco zera writeRegs, memWrite, jump e branch).
+                strcpy(opcode,"011110");
+                break;
         }
         if(ins->inst == JR){
             strcpy(rs,decimalParaBinario(ins->reg1,6));

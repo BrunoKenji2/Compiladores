@@ -8,7 +8,9 @@ Não foi possível compilar nem executar (sem gcc/flex/bison/make nesta máquina
 marcadas com ✔ foram confirmadas contra os artefatos versionados (`binarios/*.bin`, `saidas/`,
 `NOTES.txt`, `Controle.v`); as demais vêm de leitura do código.
 
-**Resumo:** 6 críticos · 11 altos · 15 médios.
+**Resumo:** 6 críticos · 11 altos · 15 médios. **1 corrigido** (B-06).
+
+**Corrigidos até agora:** B-06 (`HALT` no fim do `main`) — ver o item para o que ficou pendente.
 
 ---
 
@@ -119,7 +121,23 @@ mesmo padrão de `slt`/`set`.
 
 ---
 
-### B-06 — `HALT` nunca é emitido; a execução cai no fim da ROM
+### B-06 — `HALT` nunca é emitido; a execução cai no fim da ROM — ✅ **CORRIGIDO**
+
+> **Corrigido.** `assembler.c` passou a emitir `HALT` no `endF` do `main` e `binario.c` ganhou o
+> caso do opcode `011110`. Os 10 binários foram regenerados (652 → 662 instruções, exatamente uma
+> a mais por programa) e `sim/run.sh todos` passa com as mesmas saídas e contagens de ciclo,
+> terminando por `FIM: HALT`.
+>
+> ⚠️ **Só vale em simulação por enquanto.** O `HALT` do hardware não para de verdade com o botão
+> pressionado — ver **H-04** no `../ProcessadorMips/BUGS.md`, que continua aberto. Na placa o
+> programa ainda reinicia; o que mudou é que agora existe uma instrução explícita de parada para o
+> hardware honrar quando H-04 for corrigido.
+>
+> Falta ainda o outro lado: quando existir o SO, o `endF` do `main` terá de escolher entre `HALT`
+> (standalone) e `JR $ra` (rodando sob o SO), e o `main` precisará de prólogo para salvar o `$ra`
+> que o SO deixou. O `else` criado em `assembler.c` é o ponto onde essa decisão entra.
+
+O registro original, para contexto:
 
 **Onde:** `assembler.c` (nenhum sítio), `assembler.h:47`, `Controle.v:636`
 
@@ -128,9 +146,9 @@ O enum tem `HALT`, o hardware decodifica `011110`, mas **nenhum caminho do assem
 epílogo nem parada. Terminado o `main`, o PC continua avançando por posições não inicializadas da
 ROM.
 
-**Confirmado ✔:** o opcode `011110` não aparece em nenhuma das 652 linhas de `binarios/*.bin`.
+**Confirmado ✔:** o opcode `011110` não aparecia em nenhuma das 652 linhas de `binarios/*.bin`.
 
-**Correção:** emitir `HALT` no `endF` de `main` (ou ao fim da lista de instruções).
+**Correção aplicada:** `HALT` emitido no `endF` de `main`.
 
 ---
 
@@ -259,7 +277,7 @@ erro.
 ROM a partir dali. Hoje inerte porque B-01 impede a geração dessas instruções — mas será a primeira
 coisa a explodir ao corrigir B-01.
 
-**Confirmado ✔:** as 652 linhas de `binarios/*.bin` têm exatamente 32 caracteres.
+**Confirmado ✔:** as 662 linhas de `binarios/*.bin` têm exatamente 32 caracteres.
 
 ---
 
@@ -544,7 +562,7 @@ anterior sem flex.
 ## Nota sobre "mas funciona"
 
 B-08, B-09, B-18 e B-27 são comportamento indefinido que hoje passa despercebido porque o `malloc`
-do glibc devolve páginas zeradas em alocações novas. A verificação das 652 linhas de
+do glibc devolve páginas zeradas em alocações novas. A verificação das 662 linhas de
 `binarios/*.bin` mostra todas com exatamente 32 caracteres — ou seja, **o binário atual está correto
 por sorte, não por construção**.
 
@@ -557,7 +575,8 @@ torna todo o resto depurável.
 
 1. **B-18** (o `+1` em massa) e **B-08/B-09/B-27** — tirar o compilador do território de UB.
 2. **B-31** (`-Wall -Wextra`) — a partir daqui o build passa a apontar regressões sozinho.
-3. **B-02** e **B-06** — corretude do código gerado em qualquer programa não trivial.
+3. **B-02** — corretude do código gerado em qualquer programa não trivial.
+   (~~B-06~~ feito; para completá-lo em hardware falta o **H-04** do processador.)
 4. **B-01** + **B-14** — completar a linguagem; `maiorArray.txt` vira teste de aceitação.
 5. **B-04**, **B-05**, **B-19**, **B-20** — parar de derrubar o compilador em entradas válidas.
 6. **B-11** e **B-12** — recursão e uso de pilha confiáveis.

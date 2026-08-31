@@ -120,7 +120,10 @@ inválido). Ver B-02 em `BUGS.md`.
 - Parâmetros: o chamador faz `SW $sp, <valor>, 2+i` **antes** do `JAL`
 - Epílogo (`endF`): `SUBI $sp,$sp,<mem do escopo>` · `LW $fp,$ra,0` · `LW $fp,$fp,1` · `JR $ra`
 - Retorno: `move` para `$rf`, depois `jump END_<função>`
-- `main` **não tem prólogo nem epílogo** e **nenhum `HALT` é emitido** (B-06)
+- `main` **não tem prólogo nem epílogo**, mas **termina com `HALT`** (opcode `011110`), emitido no
+  `else` do `endF` em `assembler.c`. Não precisa de prólogo porque ninguém o chama: o preâmbulo
+  entra nele com `JUMP`, não `JAL`, então `$ra` não vale nada e não há para onde voltar.
+  ⚠️ Isso muda quando existir o SO — ver §6.
 
 ### Tabela de opcodes: compilador × hardware
 
@@ -195,7 +198,7 @@ assembler os ignora (corpos comentados), então registradores vivos não são sa
 1. **`malloc(strlen(s) * sizeof(char))` seguido de `strcpy` está em ~30 lugares** e falta o `+1` do
    terminador. Ao copiar código existente você propaga o bug. Sempre `strlen(s) + 1`.
 2. **Buffers são usados sem inicializar.** `cria_label()` faz `strcat` em memória fresca de `malloc`;
-   `binario.c` idem no ramo `INPUT`. Hoje passa porque o glibc devolve página zerada. As 652 linhas
+   `binario.c` idem no ramo `INPUT`. Hoje passa porque o glibc devolve página zerada. As 662 linhas
    de `binarios/*.bin` têm exatamente 32 caracteres — o binário está certo **por sorte**, não por
    construção. Qualquer mudança no padrão de alocação pode quebrar tudo de uma vez.
 3. **`insereQuad()` libera registradores como efeito colateral** (`intermediario.c:108-123`), com
@@ -220,4 +223,5 @@ assembler os ignora (corpos comentados), então registradores vivos não são sa
 Ver **`BUGS.md`** — 32 itens priorizados por severidade, com `arquivo:linha`, reprodução e correção
 sugerida. Os seis críticos: B-01 (`>`/`>=`/`!=` sem assembly), B-02 (registradores aliasando
 `$sp`/`$fp`/`$ra`), B-03 (`MULTI` executa `OR`), B-04 (segfault em vetor local), B-05 (segfault em
-condição constante), B-06 (`HALT` nunca emitido).
+condição constante). ~~B-06~~ (`HALT`) já está corrigido — em simulação; em hardware depende do
+**H-04** do processador, ainda aberto.
