@@ -4,19 +4,33 @@ Auditoria estática de `lex.l`, `parser.y`, `semantic.c`, `symtab.c`, `util.c`, 
 `intermediario.c`, `assembler.c`, `binario.c`, comparados com o hardware alvo em
 `../ProcessadorMips`.
 
-Não foi possível compilar nem executar (sem gcc/flex/bison/make nesta máquina). As reproduções
-marcadas com ✔ foram confirmadas contra os artefatos versionados (`binarios/*.bin`, `saidas/`,
-`NOTES.txt`, `Controle.v`); as demais vêm de leitura do código.
+As reproduções marcadas com ✔ foram confirmadas **executando**: o toolchain (gcc, flex, bison,
+make) e o Icarus Verilog vivem no **WSL Ubuntu**, não no Windows — compile e simule de lá. As demais
+vêm de leitura do código, cruzada com os artefatos versionados.
 
-**Resumo:** 6 críticos · 11 altos · 15 médios. **1 corrigido** (B-06).
+**Resumo:** 7 críticos · 11 altos · 15 médios. **2 corrigidos** (B-01, B-06) · **1 parcial** (B-33).
 
-**Corrigidos até agora:** B-06 (`HALT` no fim do `main`) — ver o item para o que ficou pendente.
+**Corrigidos até agora:** B-01 (`>`, `>=`, `!=`) · B-06 (`HALT` no fim do `main`) — ver cada item
+para o que ficou pendente. **Parcial:** B-33 (resolvido nas comparações; aberto em `-` e `/`).
+
+> **Corpus atual (10 programas):** `imprime21` `areaTriangulo` `contador` `volume` `factorial`
+> `fibonacciI` `primo` `maiorArray` `buscaArray` `sort` — 565 instruções, todos corretos em
+> `sim/run.sh todos`. Programas citados abaixo que não estão nessa lista (`gcd`, `input`,
+> `inverterArray`, `so.txt`…) foram removidos de `entradas/`; as menções a eles são históricas.
 
 ---
 
 ## Críticos
 
-### B-01 — `>`, `>=` e `!=` não geram nenhuma instrução
+### B-01 — `>`, `>=` e `!=` não geram nenhuma instrução — ✅ **CORRIGIDO**
+
+> **Corrigido em `assembler.c`** sem tocar no hardware: `a > b` → `SLT b,a`; `a >= b` → `SLET b,a`;
+> `a != b` → `SET` + `1 - resultado` (sai 0/1, vale também como valor). A troca é feita no
+> **assembler**, não no intermediário como sugerido abaixo — lá a constante trocaria de lado e o
+> B-33 inverteria de novo (`a > 5` viraria `a < 5`). Os outros 9 binários saem idênticos;
+> `maiorArray` passou de 76 para 77 instruções e dá o resultado certo.
+> Comparação entre duas constantes (`3 < 5`) é resolvida na compilação (`dobraConst()`): sai
+> um `ADDI` com 0 ou 1. Antes não gerava nada, como os outros casos deste bug.
 
 **Onde:** `assembler.c:585-601` (sgt), `assembler.c:617-632` (sdt), `assembler.c:685-700` (sget)
 
@@ -27,13 +41,65 @@ e o registrador de destino segue com lixo — o `iff` seguinte ramifica sobre va
 
 Dos seis operadores relacionais da linguagem, só `<`, `<=` e `==` funcionam.
 
-**Repro ✔:** `entradas/maiorArray.txt` usa `numeros[i] > maior` e é o **único** teste de `entradas/`
-ausente da lista de programas funcionais do `NOTES.txt`.
+**Repro ✔ executando** — `bash sim/run.sh maiorArray 10 40 20 30`:
+
+```
+OUTPUT[4] = 30        <- imprimiu o ULTIMO elemento; o maior e 40
+```
+
+O programa faz `if (numeros[i] > maior) maior = numeros[i]`. Sem instrução, o registrador da
+comparação fica com lixo não-nulo, o `BEQ` nunca desvia, e o `if` é sempre tomado — sobra o último
+elemento lido. É também o único teste de `entradas/` ausente da lista de funcionais do `NOTES.txt`.
 
 **Correção:** descomentar os três blocos e (a) corrigir os opcodes de `SGT`/`SGTI` em `binario.c`,
 hoje `""` (B-14), e (b) `SGET`/`SDT`, hoje colidindo com `MFLO`/`JR` (B-15). Alternativa mais barata
 e sem tocar no hardware: reescrever no gerador intermediário — `a > b` → `slt b, a`;
 `a >= b` → `slet b, a`; `a != b` → `set` seguido de inversão.
+
+---
+
+### B-33 — Constante à esquerda **inverte os operandos** em comparação e subtração ✔
+
+> ✅ **Corrigido para as seis comparações** junto com o B-01 (`operandoReg()` põe a constante em
+> `$aux` na posição em que ela aparece). `while (0 < i)` funciona. **Continua aberto para `sub` e
+> `divi`**: `5 - i` ainda compila como `i - 5`.
+
+**Onde (ainda aberto):** `assembler.c` — ramos `arg1.type == Const && arg2.type == String` de
+`sub` (`:442`) e `divi` (`:462`). Os de `slt`/`slet`/`set` foram reescritos com `operandoReg()`
+(`:335`).
+
+O gerador intermediário emite a quádrupla com `arg1` = operando **esquerdo** e `arg2` = **direito**.
+Mas quando o esquerdo é constante, o assembler monta a instrução com o registrador na posição de
+`rs`, invertendo a ordem:
+
+```c
+}else if(q->arg1.type == Const && q->arg2.type == String){
+    sprintf(temp,"%d",q->arg1.conteudo.val);
+    insereInstI(SLETI, pegaRegistrador(q->arg2.conteudo.nome), ..., temp);
+    //                 ^^^^ o operando DIREITO vira rs; SLETI calcula rs <= imm
+}
+```
+
+Resultado: `1 <= i` compila como `i <= 1`. Idem `0 < i` → `i < 0`, e `5 - i` → `i - 5`.
+
+**Repro ✔** — dois programas idênticos exceto pela forma da condição, contando de 5 para baixo:
+
+```c
+while (1 <= i)        -> nao imprime NADA    (vira i <= 1; com i=5 e falso de cara)
+while (limite < i)    -> imprime 5 4 3 2 1   (registrador-registrador, ordem preservada)
+```
+
+O corpus de 10 escapa porque **todos** põem a variável à esquerda. `entradas/contador.txt` foi
+escrito com `limite < i` por causa disto; com a correção nas comparações, `while (0 < i)` também
+funciona.
+
+~~⚠️ Combina com **B-01**: `>` e `>=` não geram instrução, e a alternativa óbvia — inverter para
+`1 <= i` — cai neste bug.~~ Resolvido junto com o B-01: as seis comparações aceitam constante dos
+dois lados.
+
+**Correção:** nos ramos `Const`/`String`, materializar a constante em `$aux` com `ADDI` e emitir a
+instrução tipo R com a ordem original — o padrão que `slt` já usa nos ramos simétricos. Para `sub` e
+`divi`, que não têm forma tipo R com imediato à esquerda, o `$aux` é obrigatório.
 
 ---
 
@@ -128,10 +194,8 @@ mesmo padrão de `slt`/`set`.
 > a mais por programa) e `sim/run.sh todos` passa com as mesmas saídas e contagens de ciclo,
 > terminando por `FIM: HALT`.
 >
-> ⚠️ **Só vale em simulação por enquanto.** O `HALT` do hardware não para de verdade com o botão
-> pressionado — ver **H-04** no `../ProcessadorMips/BUGS.md`, que continua aberto. Na placa o
-> programa ainda reinicia; o que mudou é que agora existe uma instrução explícita de parada para o
-> hardware honrar quando H-04 for corrigido.
+> **Fechado também no hardware:** o **H-04** do `../ProcessadorMips/BUGS.md` foi corrigido e o
+> `HALT` segura o PC incondicionalmente. O programa encerra de verdade, na simulação e na placa.
 >
 > Falta ainda o outro lado: quando existir o SO, o `endF` do `main` terá de escolher entre `HALT`
 > (standalone) e `JR $ra` (rodando sob o SO), e o `main` precisará de prólogo para salvar o `$ra`
@@ -228,8 +292,8 @@ Condições invertidas: quando `i` chega a 32, `regs[32]` é lido **antes** do t
 comentado**. As quádruplas são consumidas e descartadas.
 
 Consequência: qualquer temporário vivo durante uma chamada é destruído pelo callee. É exatamente o
-"Recursividade falta implementar salvar o contexto" do `NOTES.txt`. `gcd` funciona por sorte de
-alocação.
+"Recursividade falta implementar salvar o contexto" do `NOTES.txt`. `factorial` (e antes o `gcd`)
+funciona por sorte de alocação.
 
 **Correção:** implementar como `SW $sp,$tN,0` + `ADDI $sp,$sp,1` (empilha) e o inverso (desempilha),
 lembrando que o intermediário já emite na ordem LIFO correta (0→31 empilhando, 31→0 desempilhando).
@@ -274,10 +338,10 @@ erro.
 **Onde:** `binario.c:81-83` e `binario.c:149-150`
 
 `strcpy(opcode, "")` produz uma linha binária com menos de 32 bits, que desalinha toda a carga da
-ROM a partir dali. Hoje inerte porque B-01 impede a geração dessas instruções — mas será a primeira
-coisa a explodir ao corrigir B-01.
+ROM a partir dali. Continua inerte: o B-01 foi corrigido **sem** emitir `SGT`/`SGTI` (`>` vira
+`SLT` com operandos trocados), então nada gera essas instruções. Só explode se alguém voltar a usá-las.
 
-**Confirmado ✔:** as 662 linhas de `binarios/*.bin` têm exatamente 32 caracteres.
+**Confirmado ✔:** as 565 linhas de `binarios/*.bin` têm exatamente 32 caracteres.
 
 ---
 
@@ -320,7 +384,9 @@ em `../ProcessadorMips`** ✔ (`grep -il lcd *.v` não retorna nada).
 
 O último commit do compilador é "display lcd"; o processador não recebeu a contraparte.
 
-**Repro ✔:** `entradas/so.txt`; `saidas/binario.txt` contém `10011000000000000000000000001010`.
+**Repro ✔:** com o antigo `entradas/so.txt` (`setLcd(10)`), `saidas/binario.txt` continha
+`10011000000000000000000000001010`. Hoje nenhum programa de `entradas/` usa `setLcd`, então o bug está
+latente — volta a disparar no primeiro programa que chamar `setLcd`.
 
 **Correção:** implementar o opcode `100110` em `Controle.v` + módulo de LCD, ou remover `setLcd` do
 compilador até que o hardware exista.
@@ -342,7 +408,7 @@ comentário**, mesmo separada por outros caracteres. `/* a*b/c */` termina no `/
 `c */` passa a ser lexado como código.
 
 Nenhum teste de `entradas/` dispara isso hoje ✔ — todos os comentários com `*` e `/` têm a `/`
-antes (ex.: `gcd.txt`, `/* u-u/v*v == u mod v */`, onde `flag` ainda é 0 na `/` de `u/v`). É um
+antes (ex.: o antigo `gcd.txt`, `/* u-u/v*v == u mod v */`, onde `flag` ainda é 0 na `/` de `u/v`). É um
 bug latente, não uma falha ativa.
 
 Dois problemas secundários no mesmo bloco: `char c = input()` comparado a `EOF` nunca casa se `char`
@@ -562,7 +628,7 @@ anterior sem flex.
 ## Nota sobre "mas funciona"
 
 B-08, B-09, B-18 e B-27 são comportamento indefinido que hoje passa despercebido porque o `malloc`
-do glibc devolve páginas zeradas em alocações novas. A verificação das 662 linhas de
+do glibc devolve páginas zeradas em alocações novas. A verificação das 565 linhas de
 `binarios/*.bin` mostra todas com exatamente 32 caracteres — ou seja, **o binário atual está correto
 por sorte, não por construção**.
 
@@ -576,8 +642,9 @@ torna todo o resto depurável.
 1. **B-18** (o `+1` em massa) e **B-08/B-09/B-27** — tirar o compilador do território de UB.
 2. **B-31** (`-Wall -Wextra`) — a partir daqui o build passa a apontar regressões sozinho.
 3. **B-02** — corretude do código gerado em qualquer programa não trivial.
-   (~~B-06~~ feito; para completá-lo em hardware falta o **H-04** do processador.)
-4. **B-01** + **B-14** — completar a linguagem; `maiorArray.txt` vira teste de aceitação.
+   (~~B-06~~ feito, nos dois lados — o H-04 do processador também foi corrigido.)
+4. ~~**B-01**~~ feito, sem precisar do B-14. Falta o resto do **B-33** (`-` e `/` com constante à
+   esquerda).
 5. **B-04**, **B-05**, **B-19**, **B-20** — parar de derrubar o compilador em entradas válidas.
 6. **B-11** e **B-12** — recursão e uso de pilha confiáveis.
 7. **B-21** — sem isso, nenhuma suíte de testes automatizada consegue reprovar nada.

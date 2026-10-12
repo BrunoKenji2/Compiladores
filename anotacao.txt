@@ -1,0 +1,32 @@
+com e sem preempção sempre em loop com o so
+renomear um programa -> mudar a ordem dos arquivos -> do 1 para o 11 por exemplo
+criar um arquivo -> programa
+deletar um programa
+
+modularização -> dar o controle dos inputs e outputs para o so -> syscall
+
+
+problema com recusao na hora de liberar registrador
+
+10 programas
+
+area do triangulo *
+imprimir um numero *
+primo *
+contador *
+sort com 5 numeros
+fatorial *
+achar valor iterativo 
+fibonacci iterativo *
+volume *
+maior com 4 numeros iterativos *
+
+Anotações para o SO
+
+fazer a transição das instruções do hd dentro de um loop for
+
+memoria de dados seccionada para salvar o contexto
+
+instrução para setar o offset para a memória
+
+para o halt -> vetor com indices 1 e vira 0 quando da o halt para poder pular

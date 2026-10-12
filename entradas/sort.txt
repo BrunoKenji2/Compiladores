@@ -41,7 +41,7 @@ void main(void)
 	}
 	sort(vet,0,5);
 	i = 0;
-	while (i < 10){
+	while (i < 5){
 		output(vet[i]);
 		i = i + 1;
 	}

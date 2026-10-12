@@ -21,7 +21,7 @@ Projeto acadêmico. Comentários, nomes de função e mensagens de erro são em 
 
 ```bash
 make all                    # flex → bison → gcc -c *.c → cmenos
-./cmenos entradas/gcd.txt   # exige exatamente 1 argumento
+./cmenos entradas/factorial.txt   # exige exatamente 1 argumento
 ```
 
 Saídas são gravadas em caminhos **fixos e relativos ao diretório atual** — rode sempre a partir de
@@ -38,10 +38,14 @@ Saídas são gravadas em caminhos **fixos e relativos ao diretório atual** — 
 Outros alvos: `make clean` (mantém `saidas/`), `make clean-all` (**apaga `saidas/`, que é versionado
 como exemplo**), `make rebuild`.
 
-> **Nesta máquina Windows não há gcc, flex, bison nem make.** Use WSL, ou MSYS2 com
-> `pacman -S gcc flex bison make`. Sem toolchain, só é possível análise estática.
+> **O toolchain (gcc, flex, bison, make) e o Icarus Verilog estão no WSL Ubuntu**, não no Windows.
+> Compile e simule de lá: `wsl bash -c 'cd /mnt/c/.../Compiladores && make all'`. O Git Bash do
+> Windows reescreve caminhos `/mnt/...`; chame o `wsl` pelo PowerShell ou por um script.
 
-`binarios/*.bin` guarda os binários de referência já validados — use para testes de regressão.
+`binarios/*.bin` guarda os binários de referência já validados. O teste de regressão é
+**`bash ../ProcessadorMips/sim/run.sh todos`** (no WSL): roda os 10 binários no processador simulado.
+Ao mudar o compilador, recompile cada `entradas/<prog>.txt`, compare `saidas/binario.txt` com
+`binarios/<prog>.bin` e rode a bateria.
 
 ---
 
@@ -100,7 +104,7 @@ cada subexpressão) e `int *regs` como bitmap de 32 registradores. `assembler.c`
 | ROM (instruções) | **256** | `ROMSinglePort.v:5` (`ADDR_WIDTH=8`) |
 | RAM (dados) | **64 words** | `RAMDualPortDualClock.v:5` (`ADDR_WIDTH=6`) |
 
-`sort.bin` já ocupa 153 das 256 instruções. Na RAM, **globais crescem do endereço 63 para baixo**
+`sort.bin` já ocupa 154 das 256 instruções. Na RAM, **globais crescem do endereço 63 para baixo**
 (`63-memLocG`) e a **pilha cresce de 0 para cima** — elas colidem em silêncio.
 
 ### Registradores (`assembler.h:55-60`)
@@ -151,8 +155,8 @@ qualquer outro opcode cai no `default`, que deixa **todos os sinais de controle 
 | Mnemônico | Opcode emitido | O que o hardware executa | Emitido hoje? |
 |---|---|---|---|
 | **MULTI** | `000101` | **OR** | **sim** (`x * constante`) |
-| **SETLCD** | `100110` | **não decodificado** (`default`, sinais em `X`) | **sim** (`entradas/so.txt`) |
-| SGT / SGTI | `""` (vazio) | instrução truncada | não (B-01) |
+| **SETLCD** | `100110` | **não decodificado** (`default`, sinais em `X`) | só se o programa usar `setLcd` — nenhum de `entradas/` usa |
+| SGT / SGTI | `""` (vazio) | instrução truncada | não — o B-01 foi resolvido sem eles |
 | SGET / ANDI / SGETI | `001010` | MFLO | não |
 | SDT / ORI / SDTI | `001100` | JR | não |
 | SLL / MODI | `001101` | JALR | não |
@@ -177,19 +181,30 @@ novo tipo de instrução com destino, **não esqueça o `-1`**.
 
 ## 6. Estado real
 
-**Validados end-to-end** (`NOTES.txt` + `binarios/`): `sort` `gcd` `areaTriangulo` `volume`
-`fibonacciI` `factorial` `primo` `inverterArray` `buscaArray` `input`.
+**O corpus são 10 programas** em `entradas/`, com o `.bin` correspondente em `binarios/`. Todos
+validados end-to-end em simulação (`sim/run.sh todos`), incluindo casos de borda (ver
+`../ProcessadorMips/CLAUDE.md` §8):
 
-**Não funciona:** `maiorArray.txt` — é o único teste que usa `>`, e `>`/`>=`/`!=` não geram assembly
-(B-01). Não é coincidência que seja o único fora da lista.
+`imprime21` `areaTriangulo` `contador` `volume` `factorial` `fibonacciI` `primo` `maiorArray`
+`buscaArray` `sort`
 
-**Frágil:** recursão (`gcd`) funciona por sorte — os quads `empilha`/`desempilha` são gerados mas o
-assembler os ignora (corpos comentados), então registradores vivos não são salvos na chamada (B-11).
+Os programas antigos (`gcd`, `input`, `input2`, `inverterArray`, `fibonacci` recursivo, `soma`,
+`sub`, `div`, `potencia`, `quadrado`, `somaNumeros`, `entrada`, `so`) foram removidos. Citações a eles
+em `BUGS.md` são históricas.
 
-**Sem hardware:** `setLcd` foi adicionado no último commit do compilador ("display lcd"), mas
-`../ProcessadorMips` não tem nenhuma referência a LCD.
+**`>`, `>=`, `!=` funcionam** desde a correção do B-01, montados com `SLT`/`SLET`/`SET` (o hardware
+não precisou mudar). `maiorArray` agora dá o resultado certo. Constante à esquerda funciona nas
+comparações, mas **não em `-` e `/`** (B-33). Comparação entre duas constantes é resolvida na
+compilação por `dobraConst()` (vira um `ADDI` com 0 ou 1).
 
-**Não há testes automatizados.** A suíte de fato são os `.bin` em `binarios/`.
+**Frágil:** recursão (`factorial`) funciona por sorte — os quads `empilha`/`desempilha` são gerados
+mas o assembler os ignora (corpos comentados), então registradores vivos não são salvos na chamada
+(B-11).
+
+**Sem hardware:** `setLcd` existe no compilador (commit "display lcd"), mas `../ProcessadorMips` não
+tem nenhuma referência a LCD.
+
+**Não há testes unitários.** A regressão é a bateria de simulação: `../ProcessadorMips/sim/run.sh todos`.
 
 ---
 
@@ -198,7 +213,7 @@ assembler os ignora (corpos comentados), então registradores vivos não são sa
 1. **`malloc(strlen(s) * sizeof(char))` seguido de `strcpy` está em ~30 lugares** e falta o `+1` do
    terminador. Ao copiar código existente você propaga o bug. Sempre `strlen(s) + 1`.
 2. **Buffers são usados sem inicializar.** `cria_label()` faz `strcat` em memória fresca de `malloc`;
-   `binario.c` idem no ramo `INPUT`. Hoje passa porque o glibc devolve página zerada. As 662 linhas
+   `binario.c` idem no ramo `INPUT`. Hoje passa porque o glibc devolve página zerada. As 565 linhas
    de `binarios/*.bin` têm exatamente 32 caracteres — o binário está certo **por sorte**, não por
    construção. Qualquer mudança no padrão de alocação pode quebrar tudo de uma vez.
 3. **`insereQuad()` libera registradores como efeito colateral** (`intermediario.c:108-123`), com
@@ -218,10 +233,41 @@ assembler os ignora (corpos comentados), então registradores vivos não são sa
 
 ---
 
+## 7.1 Para onde o projeto está indo
+
+Há um **sistema operacional** em construção sobre este par compilador+processador. Ele afeta o
+compilador em pontos concretos: prólogo do `main` (hoje suprimido por um `if`), flags de relocação
+de código e dados, builtins novos (`lerHD`, `escreveInstr`), e a semântica do `HALT` no fim do
+`main`. Além disso, dois bugs deste `BUGS.md` viraram **pré-requisitos** — B-12 (ainda aberto) e
+B-01 (✅ corrigido).
+
+**Ver `../ProcessadorMips/PLANO-SO.md`** antes de mexer em `assembler.c` (prólogo/epílogo, mapa de
+memória) ou nos geradores de código.
+
+---
+
 ## 8. Bugs conhecidos
 
-Ver **`BUGS.md`** — 32 itens priorizados por severidade, com `arquivo:linha`, reprodução e correção
-sugerida. Os seis críticos: B-01 (`>`/`>=`/`!=` sem assembly), B-02 (registradores aliasando
-`$sp`/`$fp`/`$ra`), B-03 (`MULTI` executa `OR`), B-04 (segfault em vetor local), B-05 (segfault em
-condição constante). ~~B-06~~ (`HALT`) já está corrigido — em simulação; em hardware depende do
-**H-04** do processador, ainda aberto.
+Ver **`BUGS.md`** — 33 itens priorizados por severidade, com `arquivo:linha`, reprodução e correção
+sugerida. Críticos ainda abertos: B-02 (registradores aliasando `$sp`/`$fp`/`$ra`), B-03 (`MULTI`
+executa `OR`), B-04 (segfault em vetor local), B-05 (segfault em condição constante) e B-33 (só em
+`-` e `/`).
+
+**Corrigidos:** ~~B-06~~ (`HALT`, nos dois lados — o compilador emite e o hardware para, H-04) e
+~~B-01~~ (`>`/`>=`/`!=`). O B-33 está corrigido nas comparações.
+
+---
+
+## 9. Manter a documentação em dia
+
+**Toda mudança no projeto atualiza os `.md` afetados na mesma tarefa**, aqui e em
+`../ProcessadorMips`. Estes arquivos são o mapa do projeto; documentação desatualizada engana mais
+do que nenhuma. Ao terminar uma mudança, confira:
+
+- **`BUGS.md`** (deste repo e do processador): marcar corrigido/parcial, atualizar `arquivo:linha`,
+  o resumo do topo e a ordem de correção. Bug novo encontrado → item novo com repro.
+- **`CLAUDE.md`** (os dois): §6 Estado real, contagens (instruções, programas, opcodes), tabelas de
+  opcode e exemplos que citem arquivos.
+- **`../ProcessadorMips/PLANO-SO.md`**: itens feitos, pendências que bloqueiam, números de tamanho.
+- **`../ProcessadorMips/sim/run.sh`**: a lista do `todos` precisa bater com `entradas/`.
+- Números citados nos docs (instruções, ciclos, saídas) vêm de execução real, não de estimativa.

@@ -1,6 +1,6 @@
 /* Programa para encontrar o maior elemento em um array */
 
-int numeros[8];
+int numeros[4];
 
 int encontrarMaior(int tamanho)
 {
@@ -22,14 +22,14 @@ void main(void)
     int i;
     int maior;
     
-    /* Lê 8 números */
+    /* Lê 4 números */
     i = 0;
-    while (i < 8) {
+    while (i < 4) {
         numeros[i] = input();
         i = i + 1;
     }
     
     /* Encontra o maior */
-    maior = encontrarMaior(8);
+    maior = encontrarMaior(4);
     output(maior);
 }
