@@ -16,20 +16,19 @@ int busca(int elemento, int tamanho)
 
 void main(void)
 {
-    int i;
     int elemento;
     int posicao;
-    
-    /* Lê 5 números para o array */
-    i = 0;
-    while (i < 5) {
-        arr[i] = input();
-        i = i + 1;
-    }
-    
-    /* Lê o elemento a ser buscado */
+
+    /* Vetor com elementos pre-definidos */
+    arr[0] = 10;
+    arr[1] = 20;
+    arr[2] = 30;
+    arr[3] = 40;
+    arr[4] = 50;
+
+    /* Le o elemento a ser buscado */
     elemento = input();
-    
+
     /* Busca o elemento */
     posicao = busca(elemento, 5);
     output(posicao);

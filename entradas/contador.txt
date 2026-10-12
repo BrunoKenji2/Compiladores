@@ -1,0 +1,13 @@
+void main(void)
+{
+    int i;
+    int limite;
+
+    i = 5;
+    limite = 0;
+
+    while (limite < i) {
+        output(i);
+        i = i - 1;
+    }
+}

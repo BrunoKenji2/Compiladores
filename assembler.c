@@ -329,6 +329,34 @@ int pegaPosMemoria(char* nomeVar,char* nomeEscopo)
     return -1;
 }
 
+registradores operandoReg(arg a){
+    char valor[16];
+    if(a.type == Const){
+        sprintf(valor,"%d",a.conteudo.val);
+        insereInstI(ADDI,$zero,$aux,valor);
+        return $aux;
+    }
+    return pegaRegistrador(a.conteudo.nome);
+}
+
+int dobraConst(Quad* q){
+    int a, b, r;
+    if(q->arg1.type != Const || q->arg2.type != Const) return 0;
+    a = q->arg1.conteudo.val;
+    b = q->arg2.conteudo.val;
+    switch(q->op){
+        case slt:  r = a <  b; break;
+        case sgt:  r = a >  b; break;
+        case slet: r = a <= b; break;
+        case sget: r = a >= b; break;
+        case set:  r = a == b; break;
+        case sdt:  r = a != b; break;
+        default:   return 0;
+    }
+    insereInstI(ADDI,$zero,pegaRegistrador(q->out.conteudo.nome),r ? "1" : "0");
+    return 1;
+}
+
  NoInstrucao * geraAssembly(Quad* q){
     char temp[50];
     char temp2[50];
@@ -564,73 +592,46 @@ int pegaPosMemoria(char* nomeVar,char* nomeEscopo)
             criaLabel(q->arg1.conteudo.nome);
         }
 
-        if(q->op == slt){
+        // Comparacoes: o hardware so tem "<" (SLT), "<=" (SLET/SLETI) e "==" (SET)
+        // que devolvem o resultado em registrador. ">" e ">=" saem trocando os
+        // operandos; "!=" sai como 1 - (a == b). Nada aqui usa as operacoes
+        // >, >= e != da ULA, que forcam o resultado em 0.
+        // A constante, se houver, vai para $aux pela posicao em que aparece --
+        // nunca trocando de lado com o registrador, o que inverteria a comparacao.
+        if(q->op == slt && !dobraConst(q)){ // a < b
+            insereInstR(SLT,operandoReg(q->arg1),operandoReg(q->arg2),pegaRegistrador(q->out.conteudo.nome));
+        }
 
-            if(q->arg1.type == String && q->arg2.type == String){
-                // set less than "<"
-                insereInstR(SLT,pegaRegistrador(q->arg1.conteudo.nome),pegaRegistrador(q->arg2.conteudo.nome),pegaRegistrador(q->out.conteudo.nome));
-            }else if(q->arg1.type == Const && q->arg2.type == String){
-                sprintf(temp,"%d",q->arg1.conteudo.val);
-                insereInstI(ADDI,$zero,$aux,temp);
-                // insere o valor do imediato no $aux para realizar a comparação
-                insereInstR(SLT,pegaRegistrador(q->arg2.conteudo.nome),$aux,pegaRegistrador(q->out.conteudo.nome));
-            }else if(q->arg1.type == String && q->arg2.type ==  Const){
-                sprintf(temp,"%d",q->arg2.conteudo.val);
-                insereInstI(ADDI,$zero,$aux,temp);
-                insereInstR(SLT,pegaRegistrador(q->arg1.conteudo.nome),$aux,pegaRegistrador(q->out.conteudo.nome));
-            }else{
-                // não tem slt com dois imediatos
-            }
+        if(q->op == sgt && !dobraConst(q)){ // a > b  ->  b < a
+            insereInstR(SLT,operandoReg(q->arg2),operandoReg(q->arg1),pegaRegistrador(q->out.conteudo.nome));
         }
-        /*
-        REVER PARA O FUTURO
-        if(q->op ==  sgt){ // maior que
-            if(q->arg1.type == String && q->arg2.type == String){
-                //  ">"
-                insereInstR(SGT,pegaRegistrador(q->arg1.conteudo.nome),pegaRegistrador(q->arg2.conteudo.nome),pegaRegistrador(q->out.conteudo.nome));
-            }else if(q->arg1.type == Const && q->arg2.type == String){
-                sprintf(temp,"%d",q->arg1.conteudo.val);
-                insereInstI(SGTI,pegaRegistrador(q->arg2.conteudo.nome),pegaRegistrador(q->out.conteudo.nome),temp);
-            }else if(q->arg1.type == String && q->arg2.type ==  Const){
-                sprintf(temp,"%d",q->arg2.conteudo.val);
-                insereInstI(SGTI,pegaRegistrador(q->arg1.conteudo.nome),pegaRegistrador(q->out.conteudo.nome),temp);
-            }else{
-            
-            }
-        }
-        */
-        
-        if(q->op ==  slet){ // menor ou igual
-            if(q->arg1.type == String && q->arg2.type == String){
-                // slet <=
-                insereInstR(SLET,pegaRegistrador(q->arg1.conteudo.nome),pegaRegistrador(q->arg2.conteudo.nome),pegaRegistrador(q->out.conteudo.nome));
-            }else if(q->arg1.type == Const && q->arg2.type == String){
-                sprintf(temp,"%d",q->arg1.conteudo.val);
-                insereInstI(SLETI,pegaRegistrador(q->arg2.conteudo.nome),pegaRegistrador(q->out.conteudo.nome),temp);
-            }else if(q->arg1.type == String && q->arg2.type ==  Const){
+
+        if(q->op == slet && !dobraConst(q)){ // a <= b
+            if(q->arg1.type == String && q->arg2.type == Const){
+                // forma de uma instrucao so, que os binarios de referencia ja usam
                 sprintf(temp,"%d",q->arg2.conteudo.val);
                 insereInstI(SLETI,pegaRegistrador(q->arg1.conteudo.nome),pegaRegistrador(q->out.conteudo.nome),temp);
             }else{
-                // não tem slet com dois imediatos
+                insereInstR(SLET,operandoReg(q->arg1),operandoReg(q->arg2),pegaRegistrador(q->out.conteudo.nome));
             }
         }
-        /*
-        if(q->op ==  sdt){ //diferente
-            if(q->arg1.type == String && q->arg2.type == String){
-                // sdt >=
-                insereInstR(SDT,pegaRegistrador(q->arg1.conteudo.nome),pegaRegistrador(q->arg2.conteudo.nome),pegaRegistrador(q->out.conteudo.nome));
-            }else if(q->arg1.type == Const && q->arg2.type == String){
+
+        if(q->op == sget && !dobraConst(q)){ // a >= b  ->  b <= a
+            if(q->arg1.type == Const && q->arg2.type == String){
                 sprintf(temp,"%d",q->arg1.conteudo.val);
-                insereInstI(SDTI,pegaRegistrador(q->arg2.conteudo.nome),pegaRegistrador(q->out.conteudo.nome),temp);
-            }else if(q->arg1.type == String && q->arg2.type ==  Const){
-                sprintf(temp,"%d",q->arg2.conteudo.val);
-                insereInstI(SDTI,pegaRegistrador(q->arg1.conteudo.nome),pegaRegistrador(q->out.conteudo.nome),temp);
+                insereInstI(SLETI,pegaRegistrador(q->arg2.conteudo.nome),pegaRegistrador(q->out.conteudo.nome),temp);
             }else{
-            
+                insereInstR(SLET,operandoReg(q->arg2),operandoReg(q->arg1),pegaRegistrador(q->out.conteudo.nome));
             }
         }
-        */
-        if(q->op == set) 
+
+        if(q->op == sdt && !dobraConst(q)){ // a != b  ->  1 - (a == b)
+            registradores destino = pegaRegistrador(q->out.conteudo.nome);
+            insereInstR(SET,operandoReg(q->arg1),operandoReg(q->arg2),destino);
+            insereInstI(ADDI,$zero,$aux,"1");
+            insereInstR(SUBB,$aux,destino,destino);
+        }
+        if(q->op == set && !dobraConst(q))
         {
             if(q->arg1.type == String && q->arg2.type == String)
             {
@@ -682,22 +683,6 @@ int pegaPosMemoria(char* nomeVar,char* nomeEscopo)
             }
         }
         */
-       /*
-        if(q->op ==  sget){     //maior igual
-            if(q->arg1.type == String && q->arg2.type == String){
-                // sget
-                insereInstR(SGET,pegaRegistrador(q->arg1.conteudo.nome),pegaRegistrador(q->arg2.conteudo.nome),pegaRegistrador(q->out.conteudo.nome));
-            }else if(q->arg1.type == Const && q->arg2.type == String){
-                sprintf(temp,"%d",q->arg1.conteudo.val);
-                insereInstI(SGETI,pegaRegistrador(q->arg2.conteudo.nome),pegaRegistrador(q->out.conteudo.nome),temp);
-            }else if(q->arg1.type == String && q->arg2.type ==  Const){
-                sprintf(temp,"%d",q->arg2.conteudo.val);
-                insereInstI(SGETI,pegaRegistrador(q->arg1.conteudo.nome),pegaRegistrador(q->out.conteudo.nome),temp);
-            }else{
-            
-            }
-        }
-        */
 
         if(q->op ==  fun){
             criaLabel(q->arg1.conteudo.nome);
@@ -728,6 +713,11 @@ int pegaPosMemoria(char* nomeVar,char* nomeEscopo)
                 insereInstI(LW,$fp,$ra,"0");    // carrega o endereço de retorno que estava salvo na memoria, indicado por $fp
                 insereInstI(LW,$fp,$fp,"1");    // apos a execução da função o $fp volta para a sua origem 
                 insereInstR(JR,$ra,$zero,$zero);  // incrementa o ponteiro da pilha
+            }else{
+                /*
+                    Fim do main: add halt
+                */
+                insereInstR(HALT,$zero,$zero,$zero);
             }
 
         }

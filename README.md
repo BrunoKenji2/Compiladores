@@ -40,17 +40,15 @@ Compiladores/
 ├── pilha.c/h           # Estrutura de dados auxiliar
 ├── util.c/h            # Funções utilitárias
 ├── Makefile            # Script de compilação
-├── entradas/           # Arquivos de teste
-│   ├── gcd.txt        # Algoritmo de Euclides
-│   ├── sort.txt       # Algoritmo de ordenação
-│   └── teste.txt      # Outros testes
+├── entradas/           # Os 10 programas de teste (ver "Testes Inclusos")
+├── binarios/           # Binário de referência de cada programa de entradas/
 ├── saidas/            # Arquivos gerados
 │   ├── arvore.txt     # Árvore sintática
 │   ├── assembly.txt   # Código assembly
 │   ├── binario.txt    # Código binário
 │   ├── intermediario.txt # Código intermediário
 │   └── tabelaSimbolos.txt # Tabela de símbolos
-└── sofs/              # Arquivos de simulação
+└── sofs/              # Bitstreams da FPGA (.sof) de gravações antigas na placa
 ```
 
 ## 🚀 Como Usar
@@ -82,7 +80,7 @@ make rebuild    # Limpa e recompila
 
 ```bash
 # Execute o compilador com um arquivo C-
-./cmenos entradas/gcd.txt
+./cmenos entradas/factorial.txt
 
 # O compilador gerará automaticamente os seguintes arquivos:
 # - saidas/arvore.txt (árvore sintática)
@@ -95,8 +93,8 @@ make rebuild    # Limpa e recompila
 ### Exemplos de Uso
 
 ```bash
-# Compilar algoritmo de máximo divisor comum
-./cmenos entradas/gcd.txt
+# Compilar o fatorial (recursivo)
+./cmenos entradas/factorial.txt
 
 # Compilar algoritmo de ordenação
 ./cmenos entradas/sort.txt
@@ -131,20 +129,25 @@ A linguagem C- é um subconjunto da linguagem C com as seguintes característica
 ### Exemplo de Programa C-
 
 ```c
-/* Programa para calcular o MDC */
-int gcd(int u, int v) {
-    if (v == 0) 
-        return u;
-    else 
-        return gcd(v, u - u/v*v);
+/* Programa para calcular o fatorial (entradas/factorial.txt) */
+int factorial(int n) {
+    int resultF;
+    int aux;
+    if (n <= 1) {
+        return 1;
+    } else {
+        aux = n - 1;
+        resultF = factorial(aux);
+        return (n * resultF);
+    }
 }
 
 void main(void) {
-    int x; 
-    int y;
-    x = input();
-    y = input();
-    output(gcd(x, y));
+    int number;
+    int result;
+    number = input();
+    result = factorial(number);
+    output(result);
 }
 ```
 
@@ -201,9 +204,21 @@ Instruções em formato binário de 32 bits, prontas para execução.
 
 O projeto inclui programas de teste na pasta `entradas/`:
 
-- **`gcd.txt`** - Implementa o algoritmo de Euclides para cálculo do MDC
-- **`sort.txt`** - Algoritmo de ordenação por seleção para arrays
-- **`teste.txt`** - Casos de teste diversos
+| Programa | O que faz |
+|---|---|
+| `imprime21.txt` | imprime uma constante |
+| `areaTriangulo.txt` | área do triângulo (`l*h/2`) |
+| `contador.txt` | contagem regressiva de 5 a 1 (sem `input()`) |
+| `volume.txt` | volume (`x*y*z`) |
+| `factorial.txt` | fatorial recursivo |
+| `fibonacciI.txt` | Fibonacci iterativo |
+| `primo.txt` | teste de primalidade |
+| `maiorArray.txt` | maior de 4 números lidos |
+| `buscaArray.txt` | busca num vetor fixo `{10,20,30,40,50}` |
+| `sort.txt` | ordenação por seleção de 5 números |
+
+Os binários de referência ficam em `binarios/`. Para validar, rode no WSL
+`bash ../ProcessadorMips/sim/run.sh todos`, que executa os 10 no processador simulado.
 
 ## 🔧 Manutenção do Projeto
 
